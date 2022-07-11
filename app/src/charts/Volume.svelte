@@ -27,7 +27,7 @@
       .map((i) => i.y)
       .reduce((acc, curr) => (curr > acc ? curr : acc), 0);
     for (let i = 1; i <= 6; i++) {
-      yTicks.push(Math.round((maxY * i) / (6 * 100)) * 100);
+      yTicks.push(Math.round((maxY * i) / (6 * 1000000)) * 1000000);
       xTicks.push(
         new Date(86400000 * points[Math.round(((points.length - 1) * i) / 6)].x)
       );
@@ -78,7 +78,7 @@
     <center><h1>Building Graph</h1></center>
   </div>
 {:else}
-  <h2>US birthrate by year</h2>
+  <h2>ETH/USD Volume in USD</h2>
 
   <div class="chart" bind:clientWidth={width} bind:clientHeight={height}>
     <svg>
@@ -87,10 +87,7 @@
         {#each yTicks as tick}
           <g class="tick tick-{tick}" transform="translate(0, {yScale(tick)})">
             <line x2="100%" />
-            <text y="-4"
-              >{tick}
-              {tick === 20 ? " per 1,000 population" : ""}</text
-            >
+            <text y="-4" class="y-axisText">{tick / 1000000 + "M"}</text>
           </g>
         {/each}
       </g>
@@ -177,5 +174,8 @@
     padding-top: 10%;
     display: flex;
     justify-content: center;
+  }
+  .y-axisText {
+    font-family: "Times New Roman", Times, serif;
   }
 </style>
