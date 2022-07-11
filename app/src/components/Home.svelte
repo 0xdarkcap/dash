@@ -25,7 +25,7 @@
         <div class="chart">
             <Volume />
         </div>
-        <div class="chart">
+        <!-- <div class="chart">
             <Volume />
         </div>
         <div class="chart">
@@ -33,7 +33,7 @@
         </div>
         <div class="chart">
             <Volume />
-        </div>
+        </div> -->
     </div>
 {/if}
 

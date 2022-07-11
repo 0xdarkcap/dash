@@ -32,6 +32,7 @@ export async function getData(isETH) {
         })
     });
     const json = await response.json();
+    console.log({ json })
     return json.data.dayDatas
 }
 export async function getPrice(product) {
