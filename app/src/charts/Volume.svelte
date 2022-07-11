@@ -3,22 +3,26 @@
   import { scaleLinear } from "d3-scale";
   import { SPINNER_ICON } from "../../scripts/icons";
   import { onMount } from "svelte";
-  import { dayDataETH, dayDataUSDC } from "../../scripts/stores";
+  import { dayDataETH, ETHprice } from "../../scripts/stores";
   import { element } from "svelte/internal";
 
   let loading = true;
   let points = [];
   let xValues = [];
+  //   let BTCPrice;
+  let ETHPrice;
   const xTicks = [];
   const yTicks = [];
   onMount(async () => {
+    ETHPrice = await get(ETHprice);
     await get(dayDataETH).forEach((element) => {
       xValues.push(parseInt(element.id.slice(43)));
       points.push({
         x: parseInt(element.id.slice(43)),
-        y: parseInt(element.cumulativeVolume) / 100000000,
+        y: (ETHPrice * parseInt(element.cumulativeVolume)) / 100000000,
       });
     });
+    // BTCPrice = await get(BTCprice);
     const maxY = points
       .map((i) => i.y)
       .reduce((acc, curr) => (curr > acc ? curr : acc), 0);
