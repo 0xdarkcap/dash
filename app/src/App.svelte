@@ -1,10 +1,13 @@
 <script>
-	import { component } from "../scripts/stores";
+	import { component, ETHprice, BTCprice } from "../scripts/stores";
 	import { loadRoute } from "../scripts/utils";
 	import Header from "./components/Header.svelte";
 	import { onMount } from "svelte";
+	import { getPrice } from "../scripts/utils";
 
 	onMount(async () => {
+		ETHprice.set(await getPrice("ETH-USD"));
+		BTCprice.set(await getPrice("BTC-USD"));
 		loadRoute(location.hash, true);
 	});
 </script>

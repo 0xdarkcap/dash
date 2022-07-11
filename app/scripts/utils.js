@@ -34,7 +34,21 @@ export async function getData(isETH) {
     const json = await response.json();
     return json.data.dayDatas
 }
+export async function getPrice(product) {
 
+    // console.log('getPrice', product);
+
+    const url = `https://api.exchange.coinbase.com/products/${product}/ticker`;
+    try {
+        const response = await fetch(url, { timeout: 10000 });
+        const json = await response.json();
+        console.log('json', json);
+        return json.price;
+    } catch (e) {
+        throw e;
+    }
+
+}
 export function loadRoute(path, isInitial) {
     if (!path || path == '/' || path.includes('/home')) {
         component.set(Home);
