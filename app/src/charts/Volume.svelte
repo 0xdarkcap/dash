@@ -81,20 +81,21 @@
 
 <style>
     h2 {
-        text-align: left;
+        color: var(--sonic-silver);
+        text-align: center;
         position: relative;
     }
 
     .chart {
         width: 100%;
-        max-width: 500px;
+        max-width: 80vh;
         margin: 0 auto;
     }
 
     svg {
         position: relative;
         width: 100%;
-        height: 200px;
+        height: 300px;
     }
 
     .tick {

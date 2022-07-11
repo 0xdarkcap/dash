@@ -1,7 +1,7 @@
 <script>
     import Volume from "../charts/Volume.svelte";
     import { SPINNER_ICON } from "../../scripts/icons";
-    let loading = true;
+    let loading = false;
 </script>
 
 {#if loading}
@@ -33,11 +33,12 @@
         margin: 10px;
         display: flex;
         flex-wrap: wrap;
-        flex-direction: column;
+        flex-direction: row;
     }
     .chart {
-        width: 500px;
+        width: 100vh;
         margin: auto;
+        margin-top: 20px;
     }
     .loading-icon :global(svg) {
         height: 50px;
