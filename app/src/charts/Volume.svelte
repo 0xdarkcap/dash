@@ -4,7 +4,7 @@
   import { SPINNER_ICON } from "../../scripts/icons";
   import { onMount } from "svelte";
   import { dayDataETH, ETHprice } from "../../scripts/stores";
-  import { element } from "svelte/internal";
+  import { element, select_multiple_value } from "svelte/internal";
 
   let loading = true;
   let points = [];
@@ -52,6 +52,32 @@
     return "'" + tick.toString().slice(-2);
   }
 
+  function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function timeConverter(UNIX_timestamp) {
+    var a = new Date(UNIX_timestamp * 1000);
+    var months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    var year = a.getFullYear();
+    var month = months[a.getMonth()];
+    var dat = a.getDate();
+    var time = dat + " " + month + " " + year;
+    return time;
+  }
   function formatDate(date) {
     const month = "" + (date.getMonth() + 1);
     const day = "" + date.getDate();
@@ -68,6 +94,11 @@
 
   $: innerWidth = width - (padding.left + padding.right);
   $: barWidth = innerWidth / xValues.length;
+
+  $: focus = false;
+
+  $: activePoint = 0;
+  $: date = "";
 </script>
 
 {#if loading}
@@ -78,20 +109,50 @@
     <center><h1>Building Graph</h1></center>
   </div>
 {:else}
-  <h2>ETH/USD Volume in USD</h2>
-
+  {#if activePoint == 0}
+    <h2>Volume in USD</h2>
+  {:else}
+    <h2>
+      {date} |
+      <span class="volume">{numberWithCommas(Math.round(activePoint.y))} $</span
+      >
+    </h2>
+  {/if}
   <div class="chart" bind:clientWidth={width} bind:clientHeight={height}>
-    <svg>
+    <svg
+      on:mouseenter={() => {
+        focus = true;
+      }}
+      on:mouseleave={() => {
+        focus = false;
+        activePoint = 0;
+      }}
+    >
       <!-- y axis -->
-      <g class="axis y-axis">
-        {#each yTicks as tick}
-          <g class="tick tick-{tick}" transform="translate(0, {yScale(tick)})">
+      {#if activePoint == 0}
+        <g class="axis y-axis">
+          {#each yTicks as tick}
+            <g
+              class="tick tick-{tick}"
+              transform="translate(0, {yScale(tick)})"
+            >
+              <line x2="100%" />
+              <text y="-4" class="y-axisText"
+                >{(tick / 1000000).toString() + "M"}</text
+              >
+            </g>
+          {/each}
+        </g>
+      {:else}
+        <g class="axis selected">
+          <g
+            class="tick selected"
+            transform="translate(0,{yScale(activePoint.y)})"
+          >
             <line x2="100%" />
-            <text y="-4" class="y-axisText">{tick / 1000000 + "M"}</text>
           </g>
-        {/each}
-      </g>
-
+        </g>
+      {/if}
       <!-- x axis -->
       <g class="axis x-axis">
         {#each xTicks as xTick, i}
@@ -105,9 +166,14 @@
         {/each}
       </g>
 
-      <g class="bars">
+      <g class={focus == true ? "inactive" : "active"}>
         {#each points as point, i}
+          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <rect
+            on:mouseenter={() => {
+              activePoint = point;
+              date = timeConverter(point.x * 86400);
+            }}
             x={xScale(i) + 2}
             y={yScale(point.y)}
             width={barWidth - 4}
@@ -162,11 +228,20 @@
     text-anchor: middle;
   }
 
-  .bars rect {
-    fill: rgb(249, 71, 71);
+  .active rect {
+    fill: var(--orange);
     stroke: none;
-    opacity: 0.65;
+    opacity: 1;
   }
+  .inactive {
+    fill: var(--onyx-dim);
+    opacity: 1;
+  }
+  rect:hover {
+    fill: var(--green);
+    opacity: 1;
+  }
+
   .loading-icon :global(svg) {
     height: 50px;
   }
@@ -175,7 +250,12 @@
     display: flex;
     justify-content: center;
   }
+
   .y-axisText {
     font-family: "Times New Roman", Times, serif;
+  }
+
+  .volume {
+    color: var(--green);
   }
 </style>
