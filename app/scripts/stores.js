@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
 
-export const currentPage = writeable()
+export const currentPage = writable()
 
 export const component = writable()
 

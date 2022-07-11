@@ -1,11 +1,13 @@
 import { component, currentPage, toast } from "./stores";
+import Home from '../src/components/Home.svelte';
 
-export function setRoute(path, isInitial) {
+export function loadRoute(path, isInitial) {
     if (!path || path == '/' || path.includes('/home')) {
-        component.set('home');
+        component.set(Home);
         currentPage.set('home');
         document.title("CAP | dashboard")
     }
+    /*
     else if (path.includes('./pools')) {
         component.set('pools');
         currentPage.set('pools');
@@ -15,5 +17,5 @@ export function setRoute(path, isInitial) {
         component.set('trades');
         currentPage.set('trades');
         document.title('CAP | trades');
-    }
+    }*/
 }

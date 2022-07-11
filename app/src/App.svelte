@@ -1,11 +1,11 @@
 <script>
 	import { component } from "../scripts/stores";
+	import { loadRoute } from "../scripts/utils";
 	import Header from "./components/Header.svelte";
-	import { setRoute } from "../scripts/utils";
 	import { onMount } from "svelte";
 
 	onMount(async () => {
-		setRoute(location.hash, ture);
+		loadRoute(location.hash, true);
 	});
 </script>
 
@@ -44,11 +44,6 @@
 		--grid-gap: 1px;
 	}
 
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
-	}
 	:global(.pos) {
 		color: var(--green);
 	}

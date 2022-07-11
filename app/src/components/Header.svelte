@@ -1,21 +1,10 @@
 <script>
-    import { currentPage } from "../../scripts/stores";
 </script>
 
 <header>
     <div class="inner">
         <div class="left">
-            <a
-                class="logo"
-                class:active={!$currentPage || $currentPage == "home"}
-                href="/"
-            >
-                <img
-                    src="logos/cap.png"
-                    title="dashboard"
-                    alt="CAP dashboard"
-                />
-            </a>
+            <a class="logo" href="/"> <h1>🧢</h1> </a>
             <a class="link" href="#/trade">Trade</a>
         </div>
     </div>

@@ -1,0 +1,50 @@
+<script>
+    import Volume from "../charts/Volume.svelte";
+    import { SPINNER_ICON } from "../../scripts/icons";
+    let loading = true;
+</script>
+
+{#if loading}
+    <div class="empty">
+        <div class="loading-icon">{@html SPINNER_ICON}</div>
+    </div>
+    <div>
+        <center><h1>Loading</h1></center>
+    </div>
+{:else}
+    <div class="flex-container">
+        <div class="chart">
+            <Volume />
+        </div>
+        <div class="chart">
+            <Volume />
+        </div>
+        <div class="chart">
+            <Volume />
+        </div>
+        <div class="chart">
+            <Volume />
+        </div>
+    </div>
+{/if}
+
+<style>
+    .flex-container {
+        margin: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+    }
+    .chart {
+        width: 500px;
+        margin: auto;
+    }
+    .loading-icon :global(svg) {
+        height: 50px;
+    }
+    .empty {
+        padding-top: 10%;
+        display: flex;
+        justify-content: center;
+    }
+</style>
