@@ -1,17 +1,35 @@
 <script>
+    import { get } from "svelte/store";
     import { scaleLinear } from "d3-scale";
+    import { SPINNER_ICON } from "../../scripts/icons";
+    import { onMount } from "svelte";
+    import { dayDataETH, dayDataUSDC } from "../../scripts/stores";
+    import { element } from "svelte/internal";
 
-    const points = [
+    let loading = true;
+    let points = [];
+    let xTicks = [];
+    onMount(async () => {
+        await get(dayDataETH).forEach((element) => {
+            xTicks.push(parseInt(element.id.slice(43)));
+            points.push({
+                x: parseInt(element.id.slice(43)),
+                y: parseInt(element.cumulativeVolume) / 100000000,
+            });
+        });
+        console.log(points);
+        loading = false;
+    });
+    /*const points = [
         { year: 1990, birthrate: 16.7 },
         { year: 1995, birthrate: 14.6 },
         { year: 2000, birthrate: 14.4 },
         { year: 2005, birthrate: 14 },
         { year: 2010, birthrate: 13 },
         { year: 2015, birthrate: 12.4 },
-    ];
+    ];*/
 
-    const xTicks = [1990, 1995, 2000, 2005, 2010, 2015];
-    const yTicks = [0, 5, 10, 15, 20];
+    const yTicks = [0, 10000, 20000, 30000, 40000, 50000, 60000];
     const padding = { top: 20, right: 15, bottom: 20, left: 25 };
 
     let width = 500;
@@ -33,51 +51,60 @@
     $: barWidth = innerWidth / xTicks.length;
 </script>
 
-<h2>US birthrate by year</h2>
+{#if loading}
+    <div class="empty">
+        <div class="loading-icon">{@html SPINNER_ICON}</div>
+    </div>
+    <div>
+        <center><h1>Building Graph</h1></center>
+    </div>
+{:else}
+    <h2>US birthrate by year</h2>
 
-<div class="chart" bind:clientWidth={width} bind:clientHeight={height}>
-    <svg>
-        <!-- y axis -->
-        <g class="axis y-axis">
-            {#each yTicks as tick}
-                <g
-                    class="tick tick-{tick}"
-                    transform="translate(0, {yScale(tick)})"
-                >
-                    <line x2="100%" />
-                    <text y="-4"
-                        >{tick}
-                        {tick === 20 ? " per 1,000 population" : ""}</text
+    <div class="chart" bind:clientWidth={width} bind:clientHeight={height}>
+        <svg>
+            <!-- y axis -->
+            <g class="axis y-axis">
+                {#each yTicks as tick}
+                    <g
+                        class="tick tick-{tick}"
+                        transform="translate(0, {yScale(tick)})"
                     >
-                </g>
-            {/each}
-        </g>
+                        <line x2="100%" />
+                        <text y="-4"
+                            >{tick}
+                            {tick === 20 ? " per 1,000 population" : ""}</text
+                        >
+                    </g>
+                {/each}
+            </g>
 
-        <!-- x axis -->
-        <g class="axis x-axis">
-            {#each points as point, i}
-                <g class="tick" transform="translate({xScale(i)},{height})">
-                    <text x={barWidth / 2} y="-4"
-                        >{width > 380
-                            ? point.year
-                            : formatMobile(point.year)}</text
-                    >
-                </g>
-            {/each}
-        </g>
+            <!-- x axis -->
+            <g class="axis x-axis">
+                {#each points as point, i}
+                    <g class="tick" transform="translate({xScale(i)},{height})">
+                        <text x={barWidth / 2} y="-4"
+                            >{width > 380
+                                ? point.year
+                                : formatMobile(point.year)}</text
+                        >
+                    </g>
+                {/each}
+            </g>
 
-        <g class="bars">
-            {#each points as point, i}
-                <rect
-                    x={xScale(i) + 2}
-                    y={yScale(point.birthrate)}
-                    width={barWidth - 4}
-                    height={yScale(0) - yScale(point.birthrate)}
-                />
-            {/each}
-        </g>
-    </svg>
-</div>
+            <g class="bars">
+                {#each points as point, i}
+                    <rect
+                        x={xScale(i) + 2}
+                        y={yScale(point.birthrate)}
+                        width={barWidth - 4}
+                        height={yScale(0) - yScale(point.birthrate)}
+                    />
+                {/each}
+            </g>
+        </svg>
+    </div>
+{/if}
 
 <style>
     h2 {
@@ -126,5 +153,13 @@
         fill: rgb(249, 71, 71);
         stroke: none;
         opacity: 0.65;
+    }
+    .loading-icon :global(svg) {
+        height: 50px;
+    }
+    .empty {
+        padding-top: 10%;
+        display: flex;
+        justify-content: center;
     }
 </style>
