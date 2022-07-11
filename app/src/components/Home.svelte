@@ -1,7 +1,16 @@
 <script>
     import Volume from "../charts/Volume.svelte";
     import { SPINNER_ICON } from "../../scripts/icons";
-    let loading = false;
+    import { onMount } from "svelte";
+    import { getData } from "../../scripts/utils";
+    import { dayDataETH, dayDataUSDC } from "../../scripts/stores";
+    let loading = true;
+
+    onMount(async () => {
+        dayDataETH.set(await getData(true));
+        dayDataUSDC.set(await getData(false));
+        loading = false;
+    });
 </script>
 
 {#if loading}
@@ -9,7 +18,7 @@
         <div class="loading-icon">{@html SPINNER_ICON}</div>
     </div>
     <div>
-        <center><h1>Loading</h1></center>
+        <center><h1>Fetching Data</h1></center>
     </div>
 {:else}
     <div class="flex-container">
