@@ -3,7 +3,8 @@
   import { scaleLinear } from 'd3-scale';
   import { SPINNER_ICON } from '../../scripts/icons';
   import { onMount } from 'svelte';
-  import { dayDataETH, ETHprice } from '../../scripts/stores';
+  import { dayDataETH, dayDataUSDC, ETHprice } from '../../scripts/stores';
+  import { ETH_DENOMINATOR, USDC_DENOMINATOR } from '../../scripts/constants';
 
   let loading = true;
   let points = [];
@@ -18,16 +19,17 @@
       xValues.push(parseInt(element.id.slice(43)));
       points.push({
         x: parseInt(element.id.slice(43)),
-        y: ETHPrice * (parseInt(element.cumulativeVolume) / 100000000000),
+        y: ETHPrice * parseInt(element.cumulativeVolume / ETH_DENOMINATOR),
       });
     });
-    // BTCPrice = await get(BTCprice);
+    await get(dayDataUSDC).forEach((element, i) => {
+      points[i].y += parseInt(element.cumulativeVolume / USDC_DENOMINATOR);
+    });
     const maxY = points
       .map((i) => i.y)
       .reduce((acc, curr) => (curr > acc ? curr : acc), 0);
     for (let i = 1; i <= 6; i++) {
       yTicks.push(Math.ceil((maxY * i) / (6 * 1000000)) * 1000000);
-      console.log(Math.round(((points.length - 1) * (i - 1)) / 5));
       xTicks.push(
         new Date(
           86400000 * points[Math.round(((points.length - 1) * (i - 1)) / 5)].x
