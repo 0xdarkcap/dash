@@ -18,7 +18,7 @@ export async function getData(isETH) {
         body: JSON.stringify({
             query: `
                 query{
-                    dayDatas(id:"${isETH ? ETH : USDC}-${dayId}"){
+                    dayDatas(id:"${isETH ? ETH : USDC}-${dayId}", orderBy: date, orderDirection: desc, first: 1000){
                         id
                         cumulativeFees
                         cumulativePnl
@@ -32,8 +32,7 @@ export async function getData(isETH) {
         })
     });
     const json = await response.json();
-    console.log({ json })
-    return json.data.dayDatas
+    return json.data.dayDatas.reverse()
 }
 export async function getPrice(product) {
 
@@ -54,7 +53,6 @@ export function loadRoute(path, isInitial) {
     if (!path || path == '/' || path.includes('/home')) {
         component.set(Home);
         currentPage.set('home');
-        document.title("CAP | dashboard")
     }
     /*
     else if (path.includes('./pools')) {
