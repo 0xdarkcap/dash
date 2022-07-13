@@ -19,11 +19,12 @@
       xValues.push(parseInt(element.id.slice(43)));
       points.push({
         x: parseInt(element.id.slice(43)),
-        y: ETHPrice * parseInt(element.cumulativeVolume / ETH_DENOMINATOR),
+        yETH: ETHPrice * parseInt(element.cumulativeVolume / ETH_DENOMINATOR),
       });
     });
     await get(dayDataUSDC).forEach((element, i) => {
-      points[i].y += parseInt(element.cumulativeVolume / USDC_DENOMINATOR);
+      points[i].yUSD = parseInt(element.cumulativeVolume / USDC_DENOMINATOR);
+      points[i].y = points[i].yETH + points[i].yUSD;
     });
     const maxY = points
       .map((i) => i.y)
@@ -43,10 +44,6 @@
 
   let width = 500;
   let height = 200;
-
-  function formatMobile(tick) {
-    return "'" + tick.toString().slice(-2);
-  }
 
   function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -109,8 +106,13 @@
     <h2>Volume in USD</h2>
   {:else}
     <h2>
-      {date} |
-      <span class="volume">{numberWithCommas(Math.round(activePoint.y))} $</span
+      {date} | ETH:
+      <span class="volume"
+        >{numberWithCommas(Math.round(activePoint.yETH))}$</span
+      >
+      | USD:
+      <span class="volume"
+        >{numberWithCommas(Math.round(activePoint.yUSD))}$</span
       >
     </h2>
   {/if}
@@ -133,7 +135,7 @@
               class="tick tick-{tick}"
               transform="translate(0, {yScale(tick)})"
             >
-              <line x2="100%" style="transform: scaleX(1.05)" />
+              <line x2="100%" style="transform: scaleX(1.01)" />
               <text y="-4" class="y-axisText"
                 >{(tick / 1000000).toString() + 'M'}</text
               >
@@ -159,11 +161,7 @@
               (i * points.length) / (xTicks.length - 1)
             )},{height})"
           >
-            <text x={barWidth / 2} y="-4"
-              >{width > 380
-                ? formatDate(xTick)
-                : formatMobile(formatDate(xTick))}</text
-            >
+            <text x={barWidth / 2} y="-4">{formatDate(xTick)}</text>
           </g>
         {/each}
       </g>
@@ -171,17 +169,31 @@
       <!--bars-->
       <g class={focus == true ? 'inactive' : 'active'}>
         {#each points as point, i}
-          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-          <rect
-            on:mouseenter={() => {
-              activePoint = point;
-              date = timeConverter(point.x * 86400);
-            }}
-            x={xScale(i) + 2}
-            y={yScale(point.y)}
-            width={barWidth}
-            height={yScale(0) - yScale(point.y)}
-          />
+          <g class="stacked-bar">
+            <!-- ETH bar: -->
+            <rect
+              on:mouseenter={() => {
+                activePoint = point;
+                date = timeConverter(point.x * 86400);
+              }}
+              x={xScale(i) + 2}
+              y={yScale(point.yETH)}
+              width={barWidth}
+              height={yScale(0) - yScale(point.yETH)}
+            />
+            <!-- USD bar: -->
+            <rect
+              on:mouseenter={() => {
+                activePoint = point;
+                date = timeConverter(point.x * 86400);
+              }}
+              class="usd"
+              x={xScale(i) + 2}
+              y={yScale(point.y)}
+              width={barWidth}
+              height={yScale(point.yETH) - yScale(point.y)}
+            />
+          </g>
         {/each}
       </g>
     </svg>
@@ -236,12 +248,24 @@
     stroke: none;
     opacity: 1;
   }
+  .active rect.usd {
+    fill: var(--red);
+    stroke: none;
+    opacity: 1;
+  }
   .inactive {
     fill: var(--onyx-dim);
     opacity: 1;
   }
-  rect:hover {
+  g.stacked-bar {
+    height: 100%;
+  }
+  g.stacked-bar:hover > rect {
     fill: var(--green);
+    opacity: 1;
+  }
+  g.stacked-bar:hover > rect.usd {
+    fill: var(--green-dim);
     opacity: 1;
   }
 
@@ -255,7 +279,7 @@
   }
 
   .y-axis {
-    transform: translate(-30px, 0);
+    transform: translate(-5px, 0);
   }
   .y-axisText {
     font-family: 'Times New Roman', Times, serif;

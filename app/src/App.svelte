@@ -1,13 +1,13 @@
 <script>
-  import { component, ETHprice, BTCprice } from "../scripts/stores";
-  import { loadRoute } from "../scripts/utils";
-  import Header from "./components/Header.svelte";
-  import { onMount } from "svelte";
-  import { getPrice } from "../scripts/utils";
+  import { component, ETHprice, BTCprice } from '../scripts/stores';
+  import { loadRoute } from '../scripts/utils';
+  import Header from './components/Header.svelte';
+  import { onMount } from 'svelte';
+  import { getPrice } from '../scripts/utils';
 
   onMount(async () => {
-    ETHprice.set(await getPrice("ETH-USD"));
-    BTCprice.set(await getPrice("BTC-USD"));
+    ETHprice.set(await getPrice('ETH-USD'));
+    BTCprice.set(await getPrice('BTC-USD'));
     loadRoute(location.hash, true);
   });
 </script>
@@ -21,7 +21,7 @@
     --red-dim: #e04700;
     --red-dark: #421500;
     --green: #00d604;
-    --green-dim: #00c403;
+    --green-dim: #90ee90;
     --green-dark: #004d01;
 
     --rich-black: #080808;
