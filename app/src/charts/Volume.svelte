@@ -5,6 +5,11 @@
   import { onMount } from 'svelte';
   import { dayDataETH, dayDataUSDC, ETHprice } from '../../scripts/stores';
   import { ETH_DENOMINATOR, USDC_DENOMINATOR } from '../../scripts/constants';
+  import {
+    numberWithCommas,
+    timeConverter,
+    formatDate,
+  } from '../../scripts/utils';
 
   let loading = true;
   let points = [];
@@ -44,38 +49,6 @@
 
   let width = 500;
   let height = 200;
-
-  function numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  }
-
-  function timeConverter(UNIX_timestamp) {
-    var a = new Date(UNIX_timestamp * 1000);
-    var months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    var year = a.getFullYear();
-    var month = months[a.getMonth()];
-    var dat = a.getDate();
-    var time = dat + ' ' + month + ' ' + year;
-    return time;
-  }
-  function formatDate(date) {
-    const month = '' + (date.getMonth() + 1);
-    const day = '' + date.getDate();
-    return `${day}/${month}`;
-  }
 
   $: xScale = scaleLinear()
     .domain([0, xValues.length])

@@ -1,8 +1,8 @@
 import { writable, derived } from 'svelte/store';
 
-export const currentPage = writable()
+export const currentPage = writable();
 
-export const component = writable()
+export const component = writable();
 
 export const toast = writable(null);
 
