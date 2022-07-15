@@ -2,13 +2,12 @@
   import Volume from '../charts/Volume.svelte';
   import { SPINNER_ICON } from '../../scripts/icons';
   import { onMount } from 'svelte';
-  import { getData } from '../../scripts/utils';
-  import { dayDataETH, dayDataUSDC } from '../../scripts/stores';
+  import { getVolumeData } from '../../scripts/utils';
+  import { dayData } from '../../scripts/stores';
   let loading = true;
 
   onMount(async () => {
-    dayDataETH.set(await getData(true));
-    dayDataUSDC.set(await getData(false));
+    dayData.set(await getVolumeData());
     loading = false;
   });
 </script>

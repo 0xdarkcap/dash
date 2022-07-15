@@ -3,8 +3,8 @@
   import { scaleLinear } from 'd3-scale';
   import { SPINNER_ICON } from '../../scripts/icons';
   import { onMount } from 'svelte';
-  import { dayDataETH, dayDataUSDC, ETHprice } from '../../scripts/stores';
-  import { ETH_DENOMINATOR, USDC_DENOMINATOR } from '../../scripts/constants';
+  import { dayData, ETHprice } from '../../scripts/stores';
+  import { ETH, PRICE_DENOMINATOR } from '../../scripts/constants';
   import {
     numberWithCommas,
     timeConverter,
@@ -20,17 +20,36 @@
   const yTicks = [];
   onMount(async () => {
     ETHPrice = await get(ETHprice);
-    await get(dayDataETH).forEach((element) => {
-      xValues.push(parseInt(element.id.slice(43)));
-      points.push({
-        x: parseInt(element.id.slice(43)),
-        yETH: ETHPrice * parseInt(element.cumulativeVolume / ETH_DENOMINATOR),
-      });
-    });
-    await get(dayDataUSDC).forEach((element, i) => {
-      points[i].yUSD = parseInt(element.cumulativeVolume / USDC_DENOMINATOR);
-      points[i].y = points[i].yETH + points[i].yUSD;
-    });
+    const getDayData = async () => {
+      const data = await get(dayData);
+      let lastDate;
+      const pushElementToData = (element) => {
+        const currentDate = element.id.slice(43);
+        const currency = element.id.slice(0, 42);
+        if (lastDate !== currentDate) {
+          lastDate = currentDate;
+          points.push({ x: parseInt(element.id.slice(43)) });
+          xValues.push(parseInt(element.id.slice(43)));
+        }
+        if (currency == ETH) {
+          points[points.length - 1].yETH = parseInt(
+            (ETHPrice * element.cumulativeVolume) / PRICE_DENOMINATOR
+          );
+        } else {
+          points[points.length - 1].yUSD = parseInt(
+            element.cumulativeVolume / PRICE_DENOMINATOR
+          );
+        }
+        if (points[points.length - 1].yUSD && points[points.length - 1].yETH) {
+          points[points.length - 1].y =
+            points[points.length - 1].yETH + points[points.length - 1].yUSD;
+        }
+      };
+      data.forEach(pushElementToData);
+    };
+
+    await getDayData();
+
     const maxY = points
       .map((i) => i.y)
       .reduce((acc, curr) => (curr > acc ? curr : acc), 0);
@@ -59,7 +78,7 @@
     .range([height - padding.bottom, padding.top]);
 
   $: innerWidth = width - (padding.left + padding.right);
-  $: barWidth = innerWidth / xValues.length;
+  $: barWidth = xValues.length ? innerWidth / xValues.length : 0;
 
   $: focus = false;
 
@@ -106,7 +125,7 @@
           {#each yTicks as tick}
             <g
               class="tick tick-{tick}"
-              transform="translate(0, {yScale(tick)})"
+              transform="translate(0, {yScale(tick) || 0})"
             >
               <line x2="100%" style="transform: scaleX(1.01)" />
               <text y="-4" class="y-axisText"
@@ -119,7 +138,7 @@
         <g class="axis selected">
           <g
             class="tick selected"
-            transform="translate(0,{yScale(activePoint.y)})"
+            transform="translate(0,{yScale(activePoint.y) || 0})"
           >
             <line x2="100%" />
           </g>
@@ -150,9 +169,9 @@
                 date = timeConverter(point.x * 86400);
               }}
               x={xScale(i) + 2}
-              y={yScale(point.yETH)}
-              width={barWidth}
-              height={yScale(0) - yScale(point.yETH)}
+              y={yScale(point.yETH) || 0}
+              width={barWidth || 0}
+              height={yScale(0) - yScale(point.yETH) || 0}
             />
             <!-- USD bar: -->
             <rect
@@ -162,9 +181,9 @@
               }}
               class="usd"
               x={xScale(i) + 2}
-              y={yScale(point.y)}
-              width={barWidth}
-              height={yScale(point.yETH) - yScale(point.y)}
+              y={yScale(point.y) || 0}
+              width={barWidth || 0}
+              height={yScale(point.yETH) - yScale(point.y) || 0}
             />
           </g>
         {/each}

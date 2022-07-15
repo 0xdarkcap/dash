@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import Home from '../src/components/Home.svelte';
 import { GRAPH_URL, ETH, USDC } from './constants';
 
-export async function getData(isETH) {
+export async function getVolumeData() {
   const provider = new ethers.providers.JsonRpcProvider(
     'https://arb-mainnet.g.alchemy.com/v2/P3ZqdKIrgefOzk-vQqiuXxmlq-FNfFAp'
   );
@@ -18,9 +18,7 @@ export async function getData(isETH) {
     body: JSON.stringify({
       query: `
                 query{
-                    dayDatas(id:"${
-                      isETH ? ETH : USDC
-                    }-${dayId}", orderBy: date, orderDirection: desc, first: 1000){
+                    dayDatas(orderBy: date, orderDirection: desc, first: 1000){
                         id
                         cumulativeFees
                         cumulativePnl
