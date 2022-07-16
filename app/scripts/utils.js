@@ -3,20 +3,22 @@ import { ethers } from 'ethers';
 import Home from '../src/components/Home.svelte';
 import { GRAPH_URL, ETH, USDC } from './constants';
 
-export async function getVolumeData() {
-  const provider = new ethers.providers.JsonRpcProvider(
-    'https://arb-mainnet.g.alchemy.com/v2/P3ZqdKIrgefOzk-vQqiuXxmlq-FNfFAp'
-  );
-  const block = (await provider.getBlock()).timestamp;
-  const dayId = Math.round(block / 86400);
-
+async function getData(query) {
   const response = await fetch(GRAPH_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      query: `
+      query,
+    }),
+  });
+  const json = await response.json();
+  return json;
+}
+
+export async function getVolumeData() {
+  const query = `
                 query{
                     dayDatas(orderBy: date, orderDirection: desc, first: 1000){
                         id
@@ -28,10 +30,8 @@ export async function getVolumeData() {
                         positionCount
                     }
                 }
-            `,
-    }),
-  });
-  const json = await response.json();
+              `;
+  const json = await getData(query);
   return json.data.dayDatas.reverse();
 }
 export async function getPrice(product) {
@@ -45,6 +45,24 @@ export async function getPrice(product) {
     throw e;
   }
 }
+
+export async function getPositionsData() {
+  const query = `
+                query{
+                  positions(orderBy: liquidationPrice, orderDirection: asc, first: 1000) {
+                    size
+                    createdAtTimestamp
+                    currency
+                    liquidationPrice
+                    leverage
+                  }
+                }
+              `;
+  const json = await getData(query);
+  console.log(json);
+  return json;
+}
+
 export function loadRoute(path, isInitial) {
   if (!path || path == '/' || path.includes('/home')) {
     component.set(Home);
