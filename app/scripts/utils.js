@@ -49,8 +49,9 @@ export async function getPrice(product) {
 export async function getPositionsData() {
   const query = `
                 query{
-                  positions(orderBy: liquidationPrice, orderDirection: asc, first: 1000) {
+                  positions(orderBy: margin, orderDirection: asc, first: 1000) {
                     size
+                    margin
                     createdAtTimestamp
                     currency
                     liquidationPrice
@@ -59,8 +60,7 @@ export async function getPositionsData() {
                 }
               `;
   const json = await getData(query);
-  console.log(json);
-  return json;
+  return json.data.positions;
 }
 
 export function loadRoute(path, isInitial) {

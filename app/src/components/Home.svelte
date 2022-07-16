@@ -4,6 +4,7 @@
   import { onMount } from 'svelte';
   import { getVolumeData, getPositionsData } from '../../scripts/utils';
   import { dayData, positionsData } from '../../scripts/stores';
+  import Scatter from '../charts/Scatter.svelte';
   let loading = true;
 
   onMount(async () => {
@@ -24,6 +25,9 @@
   <div class="flex-container">
     <div class="chart">
       <Volume />
+    </div>
+    <div class="chart">
+      <Scatter />
     </div>
     <!-- <div class="chart">
             <Volume />
