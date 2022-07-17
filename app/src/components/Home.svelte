@@ -3,15 +3,22 @@
   import { SPINNER_ICON } from '../../scripts/icons';
   import { onMount } from 'svelte';
   import { getVolumeData, getPositionsData } from '../../scripts/utils';
-  import { dayData, positionsData } from '../../scripts/stores';
+  import {
+    dayData,
+    positionsDataBTC,
+    positionsDataETH,
+  } from '../../scripts/stores';
   import Scatter from '../charts/Scatter.svelte';
   import Revenue from '../charts/Revenue.svelte';
   import Pnl from '../charts/Pnl.svelte';
+  import BTCmap from '../charts/BTCmap.svelte';
+  import { ETHUSD, BTCUSD } from '../../scripts/constants';
   let loading = true;
 
   onMount(async () => {
     dayData.set(await getVolumeData());
-    positionsData.set(await getPositionsData());
+    positionsDataETH.set(await getPositionsData(ETHUSD));
+    positionsDataBTC.set(await getPositionsData(BTCUSD));
     loading = false;
   });
 </script>
@@ -27,6 +34,9 @@
   <div class="flex-container">
     <div class="chart">
       <Scatter product="ETH-USD" />
+    </div>
+    <div class="chart">
+      <BTCmap />
     </div>
     <div class="chart">
       <Volume />

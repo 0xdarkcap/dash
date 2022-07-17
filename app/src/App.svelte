@@ -6,8 +6,8 @@
   import { getPrice } from '../scripts/utils';
 
   onMount(async () => {
-    ETHprice.set(await getPrice('ETH-USD'));
-    BTCprice.set(await getPrice('BTC-USD'));
+    $: ETHprice.set(await getPrice('ETH-USD'));
+    $: BTCprice.set(await getPrice('BTC-USD'));
     loadRoute(location.hash, true);
   });
 </script>
@@ -17,6 +17,7 @@
 
 <style>
   :global(:root) {
+    --cherry: #ff003f;
     --red: #ff5000;
     --red-dim: #e04700;
     --red-dark: #421500;
@@ -46,7 +47,6 @@
     --ticker-height: 60px;
     --grid-gap: 1px;
   }
-
   :global(.pos) {
     color: var(--green);
   }

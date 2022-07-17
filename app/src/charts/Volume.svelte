@@ -242,12 +242,12 @@
   }
 
   .active rect {
-    fill: blue;
+    fill: var(--cherry);
     stroke: none;
     opacity: 1;
   }
   .active rect.usd {
-    fill: cyan;
+    fill: yellow;
     stroke: none;
     opacity: 1;
   }
@@ -259,11 +259,11 @@
     height: 100%;
   }
   g.stacked-bar:hover > rect {
-    fill: blue;
+    fill: var(--cherry);
     opacity: 1;
   }
   g.stacked-bar:hover > rect.usd {
-    fill: cyan;
+    fill: yellow;
     opacity: 1;
   }
 
@@ -284,9 +284,9 @@
   }
 
   .volumeETH {
-    color: blue;
+    color: var(--cherry);
   }
   .volumeUSDC {
-    color: cyan;
+    color: yellow;
   }
 </style>

@@ -46,10 +46,10 @@ export async function getPrice(product) {
   }
 }
 
-export async function getPositionsData() {
+export async function getPositionsData(PRODUCT) {
   const query = `
                 query{
-                  positions(orderBy: margin, orderDirection: desc, first: 1000) {
+                  positions(where:{productId:"${PRODUCT}"}orderBy: margin, orderDirection: desc, first: 1000) {
                         id,
 						productId,
 						currency,

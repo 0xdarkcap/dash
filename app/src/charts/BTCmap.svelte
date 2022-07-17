@@ -10,7 +10,7 @@
     BTCUSD,
   } from '../../scripts/constants';
   import { SPINNER_ICON, CARET_DOWN } from '../../scripts/icons';
-  import { BTCprice, ETHprice, positionsDataETH } from '../../scripts/stores';
+  import { BTCprice, ETHprice, positionsDataBTC } from '../../scripts/stores';
   import { numberWithCommas } from '../../scripts/utils';
 
   let activePoint = 0;
@@ -26,36 +26,32 @@
   onMount(async () => {
     ethP = await get(ETHprice);
     btcP = await get(BTCprice);
-    let data = await get(positionsDataETH);
+    let data = await get(positionsDataBTC);
     console.log(data);
-    data = data.filter(
-      (position) => position.liquidationPrice / PRICE_DENOMINATOR < ethP * 5
-    );
+
     data.forEach((position) => {
-      if (position.productId == ETHUSD && product == 'ETH-USD') {
-        if (position.currency == ETH) {
-          points.push({
-            x:
-              Math.ceil((position.liquidationPrice * 100) / PRICE_DENOMINATOR) /
-              100,
-            y: parseInt((position.margin / PRICE_DENOMINATOR) * ethP),
-            curr: 'ETH',
-            size: parseInt(position.size / PRICE_DENOMINATOR),
-            isLong: position.isLong,
-            leverage: parseInt(position.leverage),
-          });
-        } else {
-          points.push({
-            x:
-              Math.ceil((position.liquidationPrice * 100) / PRICE_DENOMINATOR) /
-              100,
-            y: parseInt(position.margin / PRICE_DENOMINATOR),
-            curr: 'USDC',
-            size: parseInt(position.size / PRICE_DENOMINATOR),
-            isLong: position.isLong,
-            leverage: parseInt(position.leverage),
-          });
-        }
+      if (position.currency == ETH) {
+        points.push({
+          x:
+            Math.ceil((position.liquidationPrice * 100) / PRICE_DENOMINATOR) /
+            100,
+          y: parseInt((position.margin / PRICE_DENOMINATOR) * ethP),
+          curr: 'ETH',
+          size: parseInt(position.size / PRICE_DENOMINATOR),
+          isLong: position.isLong,
+          leverage: parseInt(position.leverage),
+        });
+      } else {
+        points.push({
+          x:
+            Math.ceil((position.liquidationPrice * 100) / PRICE_DENOMINATOR) /
+            100,
+          y: parseInt(position.margin / PRICE_DENOMINATOR),
+          curr: 'USDC',
+          size: parseInt(position.size / PRICE_DENOMINATOR),
+          isLong: position.isLong,
+          leverage: parseInt(position.leverage),
+        });
       }
     });
 
@@ -94,7 +90,7 @@
   </div>
 {:else}
   {#if activePoint == 0}
-    <h3>Liquidation Map {product}</h3>
+    <h3>Liquidation Map BTC-USD</h3>
   {:else}
     <h3>
       <span class={activePoint.curr == 'ETH' ? 'eth' : 'usdc'}
@@ -105,9 +101,9 @@
           : activePoint.y + ' USDC'}</span
       >
       margin gets liquidated at
-      <span style="color: white;">Ξ: {numberWithCommas(activePoint.x)}$</span>
-      <span class={activePoint.x > ethP ? 'pos' : 'neg'}
-        >({(((activePoint.x - ethP) / ethP) * 100).toFixed(1)}%)</span
+      <span style="color: white;">BTC: {numberWithCommas(activePoint.x)}$</span>
+      <span class={activePoint.x > btcP ? 'pos' : 'neg'}
+        >({(((activePoint.x - btcP) / btcP) * 100).toFixed(1)}%)</span
       >
     </h3>
   {/if}
@@ -139,20 +135,15 @@
         {#each xTicks as tick}
           <g class="tick" transform="translate({xScale(tick)},0)" />
         {/each}
-        {#if product == 'ETH-USD'}
-          <g class="tickETHP" transform="translate({xScale(ethP)},0)">
-            <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
-          </g>
-          <g class="tick" transform="translate({xScale(ethP)},0)">
-            <text class="ethScale" y={height - padding.bottom + 40}
-              >Ξ: {numberWithCommas(ethP)}$</text
-            >
-          </g>
-        {:else}
-          <g class="tickETHP" transform="translate({xScale(btcP)},0)">
-            <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
-          </g>
-        {/if}
+        <g class="tickETHP" transform="translate({xScale(btcP)},0)">
+          <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
+        </g>
+        <g class="tick" transform="translate({xScale(btcP)},0)">
+          <text class="ethScale" y={height - padding.bottom + 40}
+            >BTC: {numberWithCommas(btcP)}$</text
+          >
+        </g>
+
         <g class="tick" transform="translate({xScale(Math.min(...xTicks))},0)">
           <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
         </g>
@@ -164,7 +155,7 @@
             >
           </g>
           <g class="tick" transform="translate(0,{yScale(activePoint.y)})">
-            <line x1={xScale(activePoint.x)} x2={xScale(ethP)} />
+            <line x1={xScale(activePoint.x)} x2={xScale(btcP)} />
           </g>
         {/if}
       </g>
