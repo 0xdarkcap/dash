@@ -5,6 +5,8 @@
   import { getVolumeData, getPositionsData } from '../../scripts/utils';
   import { dayData, positionsData } from '../../scripts/stores';
   import Scatter from '../charts/Scatter.svelte';
+  import Revenue from '../charts/Revenue.svelte';
+  import Pnl from '../charts/Pnl.svelte';
   let loading = true;
 
   onMount(async () => {
@@ -24,10 +26,16 @@
 {:else}
   <div class="flex-container">
     <div class="chart">
+      <Scatter product="ETH-USD" />
+    </div>
+    <div class="chart">
       <Volume />
     </div>
     <div class="chart">
-      <Scatter />
+      <Revenue />
+    </div>
+    <div class="chart">
+      <Pnl />
     </div>
     <!-- <div class="chart">
             <Volume />

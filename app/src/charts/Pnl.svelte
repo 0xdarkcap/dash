@@ -33,11 +33,11 @@
         }
         if (currency == ETH) {
           points[points.length - 1].yETH = parseInt(
-            element.cumulativeVolume / PRICE_DENOMINATOR
+            element.cumulativePnl / PRICE_DENOMINATOR
           );
         } else {
           points[points.length - 1].yUSD = parseInt(
-            element.cumulativeVolume / PRICE_DENOMINATOR
+            element.cumulativePnl / PRICE_DENOMINATOR
           );
         }
         if (points[points.length - 1].yUSD && points[points.length - 1].yETH) {
@@ -54,6 +54,10 @@
     const maxY = points
       .map((i) => i.y)
       .reduce((acc, curr) => (curr > acc ? curr : acc), 0);
+    const minY = points
+      .map((i) => i.y)
+      .reduce((acc, curr) => (curr < acc ? curr : acc));
+    console.log(maxY);
     for (let i = 1; i <= 6; i++) {
       yTicks.push(Math.ceil((maxY * i) / (6 * 1000000)) * 1000000);
       xTicks.push(
@@ -96,7 +100,7 @@
   </div>
 {:else}
   {#if activePoint == 0}
-    <h3>Volume in USD</h3>
+    <h3>Traders PNL</h3>
   {:else}
     <h3>
       {date} | Ξ:
@@ -174,10 +178,11 @@
                 activePoint = point;
                 date = timeConverter(point.x * 86400);
               }}
+              class={point.yETH < 0 ? 'downETH' : 'upETH'}
               x={xScale(i) + 2}
-              y={yScale(ETHPrice * point.yETH) || 0}
+              y={yScale(point.yETH < 0 ? 0 : ETHPrice * point.yETH)}
               width={barWidth || 0}
-              height={yScale(0) - yScale(ETHPrice * point.yETH) || 0}
+              height={yScale(0) - yScale(Math.abs(ETHPrice * point.yETH)) || 0}
             />
             <!-- USD bar: -->
             <rect
@@ -185,11 +190,25 @@
                 activePoint = point;
                 date = timeConverter(point.x * 86400);
               }}
-              class="usd"
+              class={point.yUSD < 0 ? 'downUSD' : 'upUSD'}
               x={xScale(i) + 2}
-              y={yScale(point.y) || 0}
+              y={yScale(
+                point.yUSD < 0
+                  ? point.yETH < 0
+                    ? point.yETH * ETHprice
+                    : 0
+                  : point.yETH > 0
+                  ? point.y
+                  : point.yUSD
+              ) || 0}
               width={barWidth || 0}
-              height={yScale(ETHPrice * point.yETH) - yScale(point.y) || 0}
+              height={point.yUSD < 0
+                ? point.yETH < 0
+                  ? yScale(0) - yScale(Math.abs(point.y))
+                  : yScale(0) - yScale(Math.abs(point.yUSD))
+                : point.yETH > 0
+                ? yScale(point.yETH * ETHprice) - yScale(point.y)
+                : yScale(0) - yScale(Math.abs(point.yUSD))}
             />
           </g>
         {/each}
@@ -240,13 +259,22 @@
   .x-axis .tick text {
     text-anchor: middle;
   }
-
-  .active rect {
+  .active rect.downUSD {
+    fill: red;
+    stroke: none;
+    opacity: 1;
+  }
+  .active rect.downETH {
+    fill: orange;
+    stroke: none;
+    opacity: 1;
+  }
+  .active rect.upETH {
     fill: blue;
     stroke: none;
     opacity: 1;
   }
-  .active rect.usd {
+  .active rect.upUSD {
     fill: cyan;
     stroke: none;
     opacity: 1;

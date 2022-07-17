@@ -33,11 +33,11 @@
         }
         if (currency == ETH) {
           points[points.length - 1].yETH = parseInt(
-            element.cumulativeVolume / PRICE_DENOMINATOR
+            element.cumulativeFees / PRICE_DENOMINATOR
           );
         } else {
           points[points.length - 1].yUSD = parseInt(
-            element.cumulativeVolume / PRICE_DENOMINATOR
+            element.cumulativeFees / PRICE_DENOMINATOR
           );
         }
         if (points[points.length - 1].yUSD && points[points.length - 1].yETH) {
@@ -54,6 +54,7 @@
     const maxY = points
       .map((i) => i.y)
       .reduce((acc, curr) => (curr > acc ? curr : acc), 0);
+    console.log(maxY);
     for (let i = 1; i <= 6; i++) {
       yTicks.push(Math.ceil((maxY * i) / (6 * 1000000)) * 1000000);
       xTicks.push(
@@ -96,7 +97,7 @@
   </div>
 {:else}
   {#if activePoint == 0}
-    <h3>Volume in USD</h3>
+    <h3>Protocol Revenue</h3>
   {:else}
     <h3>
       {date} | Ξ:
