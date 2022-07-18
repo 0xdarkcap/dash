@@ -11,7 +11,6 @@
   import Scatter from '../charts/Scatter.svelte';
   import Revenue from '../charts/Revenue.svelte';
   import Pnl from '../charts/Pnl.svelte';
-  import BTCmap from '../charts/BTCmap.svelte';
   import { ETHUSD, BTCUSD } from '../../scripts/constants';
   let loading = true;
 
@@ -36,7 +35,7 @@
       <Scatter product="ETH-USD" />
     </div>
     <div class="chart">
-      <BTCmap />
+      <Scatter product="BTC-USD" />
     </div>
     <div class="chart">
       <Volume />
@@ -47,15 +46,6 @@
     <div class="chart">
       <Pnl />
     </div>
-    <!-- <div class="chart">
-            <Volume />
-        </div>
-        <div class="chart">
-            <Volume />
-        </div>
-        <div class="chart">
-            <Volume />
-        </div> -->
   </div>
 {/if}
 

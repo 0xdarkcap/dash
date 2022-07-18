@@ -49,20 +49,19 @@ export async function getPrice(product) {
 export async function getPositionsData(PRODUCT) {
   const query = `
                 query{
-                  positions(where:{productId:"${PRODUCT}"}orderBy: margin, orderDirection: desc, first: 1000) {
+                    positions(where:{productId:"${PRODUCT}"}orderBy: margin, orderDirection: desc, first: 1000) {
                         id,
-						productId,
-						currency,
-						leverage,
-						price,
-						margin,
-						size,
-						user,
-						liquidationPrice,
-						isLong,
-						createdAtTimestamp,
-						updatedAtTimestamp
-                  }
+                        productId,
+                        currency,
+                        leverage,
+                        price,
+                        margin,
+                        user,
+                        liquidationPrice,
+                        isLong,
+                        createdAtTimestamp,
+                        updatedAtTimestamp
+                    }
                 }
               `;
   const json = await getData(query);
