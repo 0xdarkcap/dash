@@ -27,7 +27,6 @@
     let data = await get(
       product == 'ETH-USD' ? positionsDataETH : positionsDataBTC
     );
-    console.log(data);
     data.forEach((position) => {
       if (position.currency == ETH) {
         points.push({
@@ -60,8 +59,6 @@
       yTicks.push(minY + (i * maxY) / 5);
     }
 
-    console.log(points);
-    console.log(yTicks);
     loading = false;
   });
   $: xScale = scaleLinear()
