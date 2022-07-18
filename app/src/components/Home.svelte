@@ -43,9 +43,6 @@
     <div class="chart">
       <Revenue />
     </div>
-    <div class="chart">
-      <Pnl />
-    </div>
   </div>
 {/if}
 

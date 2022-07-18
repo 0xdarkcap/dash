@@ -4,6 +4,7 @@
   import Header from './components/Header.svelte';
   import { onMount } from 'svelte';
   import { getPrice } from '../scripts/utils';
+  import Footer from './components/Footer.svelte';
 
   onMount(async () => {
     $: ETHprice.set(await getPrice('ETH-USD'));
@@ -14,6 +15,7 @@
 
 <Header />
 <svelte:component this={$component} />
+<Footer />
 
 <style>
   :global(:root) {
