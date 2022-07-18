@@ -28,17 +28,13 @@
       product == 'ETH-USD' ? positionsDataETH : positionsDataBTC
     );
     console.log(data);
-    data = data.filter(
-      (position) =>
-        position.liquidationPrice / PRICE_DENOMINATOR < productPrice * 5
-    );
     data.forEach((position) => {
       if (position.currency == ETH) {
         points.push({
           x: +(position.liquidationPrice / PRICE_DENOMINATOR).toFixed(2),
           y: +((position.margin / PRICE_DENOMINATOR) * ethP).toFixed(2),
           curr: 'ETH',
-          margin: +(position.margin / PRICE_DENOMINATOR).toFixed(2),
+          margin: +(position.margin / PRICE_DENOMINATOR).toFixed(3),
           isLong: position.isLong,
           leverage: parseInt(position.leverage),
         });
@@ -53,6 +49,10 @@
         });
       }
     });
+
+    points = points.filter(
+      (position) => position.x < productPrice * 5 && position.y > 10
+    );
 
     const maxY = Math.max(...points.map((i) => i.y));
     const minY = Math.min(...points.map((i) => i.y));
@@ -72,7 +72,7 @@
     .range([padding.left, width - padding.right]);
 
   $: yScale = scalePow()
-    .exponent(0.5)
+    .exponent(0.4)
     .domain([0, Math.max(...yTicks)])
     .range([height - padding.bottom, padding.top]);
 
