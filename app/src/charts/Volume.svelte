@@ -141,10 +141,10 @@
             transform="translate(0,{yScale(activePoint.y) || 0})"
           >
             <line x2="100%" />
-            <text
-              >{Math.floor(
-                (activePoint.yETH * ETHPrice + activePoint.yUSD) / 1000000
-              ).toString() + 'M'}</text
+            <text class="y-axisText"
+              >{amountFormatter(
+                activePoint.yETH * ETHPrice + activePoint.yUSD
+              )}</text
             >
           </g>
         </g>

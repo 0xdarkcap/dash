@@ -9,6 +9,7 @@
     numberWithCommas,
     timeConverter,
     formatDate,
+    amountFormatter,
   } from '../../scripts/utils';
 
   let loading = true;
@@ -56,7 +57,7 @@
       .reduce((acc, curr) => (curr > acc ? curr : acc), 0);
     console.log(maxY);
     for (let i = 1; i <= 6; i++) {
-      yTicks.push(Math.ceil((maxY * i) / (6 * 1000000)) * 1000000);
+      yTicks.push(Math.ceil((maxY * i) / 6));
       xTicks.push(
         new Date(
           86400000 * points[Math.round(((points.length - 1) * (i - 1)) / 5)].x
@@ -130,9 +131,7 @@
               transform="translate(0, {yScale(tick) || 0})"
             >
               <line x2="100%" style="transform: scaleX(1.01)" />
-              <text y="-4" class="y-axisText"
-                >{(tick / 1000000).toString() + 'M'}</text
-              >
+              <text y="-4" class="y-axisText">{amountFormatter(tick)}</text>
             </g>
           {/each}
         </g>
@@ -143,10 +142,10 @@
             transform="translate(0,{yScale(activePoint.y) || 0})"
           >
             <line x2="100%" />
-            <text
-              >{Math.floor(
-                (activePoint.yETH * ETHPrice + activePoint.yUSD) / 1000000
-              ).toString() + 'M'}</text
+            <text class="y-axisText"
+              >{amountFormatter(
+                activePoint.yETH * ETHPrice + activePoint.yUSD
+              )}</text
             >
           </g>
         </g>
