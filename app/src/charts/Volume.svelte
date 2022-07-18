@@ -206,12 +206,12 @@
         <g class="ma-7">
           {#each ma7 as maPoint, i}
             <line
+              class="ma7-line"
               x1={xScale(i + 6)}
               x2={xScale(i + 7)}
               y1={yScale(maPoint)}
               y2={yScale(ma7[i + 1] || ma7[i])}
-              stroke="green"
-              stroke-width="0.5%"
+              stroke-width="0.3%"
             />
           {/each}
         </g>
@@ -221,7 +221,7 @@
 {/if}
 
 <style>
-  .line {
+  .ma7-line {
     stroke: orange;
     opacity: 1;
   }
