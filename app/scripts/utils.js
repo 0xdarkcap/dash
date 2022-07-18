@@ -117,3 +117,13 @@ export function formatDate(date) {
   const day = '' + date.getDate();
   return `${day}/${month}`;
 }
+
+export function amountFormatter(num) {
+  if (num > 999 && num < 1000000) {
+    return (num / 1000).toFixed(1) + 'K';
+  } else if (num > 1000000) {
+    return (num / 1000000).toFixed(0) + 'M';
+  } else if (num < 900) {
+    return num.toFixed(1);
+  }
+}

@@ -9,6 +9,7 @@
     numberWithCommas,
     timeConverter,
     formatDate,
+    amountFormatter,
   } from '../../scripts/utils';
 
   let loading = true;
@@ -129,9 +130,7 @@
               transform="translate(0, {yScale(tick) || 0})"
             >
               <line x2="100%" style="transform: scaleX(1.01)" />
-              <text y="-4" class="y-axisText"
-                >{(tick / 1000000).toString() + 'M'}</text
-              >
+              <text y="-4" class="y-axisText">{amountFormatter(tick)}</text>
             </g>
           {/each}
         </g>

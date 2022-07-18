@@ -1,7 +1,7 @@
 <script>
   import { get } from 'svelte/store';
   import { onMount } from 'svelte';
-  import { scaleLinear, scaleSqrt } from 'd3-scale';
+  import { scaleLinear, scalePow } from 'd3-scale';
   import { ETH, PRICE_DENOMINATOR } from '../../scripts/constants';
   import { SPINNER_ICON } from '../../scripts/icons';
   import {
@@ -10,7 +10,7 @@
     positionsDataBTC,
     positionsDataETH,
   } from '../../scripts/stores';
-  import { numberWithCommas } from '../../scripts/utils';
+  import { numberWithCommas, amountFormatter } from '../../scripts/utils';
 
   let activePoint = 0;
   let loading = true;
@@ -36,7 +36,7 @@
       if (position.currency == ETH) {
         points.push({
           x: +(position.liquidationPrice / PRICE_DENOMINATOR).toFixed(2),
-          y: +((position.margin / PRICE_DENOMINATOR) * productPrice).toFixed(2),
+          y: +((position.margin / PRICE_DENOMINATOR) * ethP).toFixed(2),
           curr: 'ETH',
           margin: +(position.margin / PRICE_DENOMINATOR).toFixed(2),
           isLong: position.isLong,
@@ -54,29 +54,27 @@
       }
     });
 
-    const chartMargin = productPrice * 0.05;
-    const maxX = Math.max(...points.map((i) => i.x)) + chartMargin;
-    const minX = Math.min(...points.map((i) => i.x)) - chartMargin;
     const maxY = Math.max(...points.map((i) => i.y));
     const minY = Math.min(...points.map((i) => i.y));
-    for (let i = 1; i <= 6; i++) {
-      xTicks.push(Math.round(minX + ((i - 1) * maxX) / 5));
-      yTicks.push(minY + ((i - 1) * maxY) / 5);
+    for (let i = 1; i <= 5; i++) {
+      yTicks.push(minY + (i * maxY) / 5);
     }
 
     console.log(points);
-    console.log(xTicks, yTicks);
+    console.log(yTicks);
     loading = false;
   });
   $: xScale = scaleLinear()
-    .domain([Math.min(...xTicks), Math.max(...xTicks)])
+    .domain([
+      Math.min(...points.map((i) => i.x)) - productPrice * 0.05,
+      Math.max(...points.map((i) => i.x)) + productPrice * 0.05,
+    ])
     .range([padding.left, width - padding.right]);
 
-  $: yScale = scaleSqrt()
-    .domain([Math.min(...yTicks), Math.max(...yTicks)])
+  $: yScale = scalePow()
+    .exponent(0.5)
+    .domain([0, Math.max(...yTicks)])
     .range([height - padding.bottom, padding.top]);
-
-  $: xTicks = [];
 
   $: yTicks = [];
 </script>
@@ -120,9 +118,7 @@
       <g class="axis y-axis">
         {#each yTicks as tick}
           <g class="tick tick-{tick}" transform="translate(0, {yScale(tick)})">
-            <text x={padding.left - 8} y="+4"
-              >{Math.round(tick / 1000).toString() + 'K'}</text
-            >
+            <text x={padding.left - 8} y="+4">{amountFormatter(tick)}</text>
           </g>
         {/each}
         <g class="tick" transform="translate(0,{yScale(0)})">
@@ -141,7 +137,7 @@
             {numberWithCommas(productPrice)}$</text
           >
         </g>
-        <g class="tick" transform="translate({xScale(Math.min(...xTicks))},0)">
+        <g class="tick" transform="translate({padding.left},0)">
           <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
         </g>
         {#if activePoint != 0}
