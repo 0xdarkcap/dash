@@ -97,7 +97,10 @@
           : activePoint.margin + ' USDC'}</span
       >
       margin gets liquidated at
-      <span style="color: white;">Ξ: {numberWithCommas(activePoint.x)}$</span>
+      <span style="color: white;"
+        >{product == 'ETH-USD' ? 'Ξ:' : 'BTC: '}
+        {numberWithCommas(activePoint.x)}$</span
+      >
       <span class={activePoint.x > productPrice ? 'pos' : 'neg'}
         >({(((activePoint.x - productPrice) / productPrice) * 100).toFixed(
           1
