@@ -207,23 +207,29 @@
           </g>
         {/each}
       </g>
-      <g class="ma-7">
-        {#each ma7 as maPoint, i}
-          <line
-            x1={xScale(i + 6)}
-            x2={xScale(i + 7)}
-            y1={yScale(maPoint.y1)}
-            y2={yScale(maPoint.y2)}
-            stroke="green"
-            stroke-width="0.5%"
-          />
-        {/each}
-      </g>
+      {#if focus == true}
+        <g class="ma-7">
+          {#each ma7 as maPoint, i}
+            <line
+              class="line"
+              x1={xScale(i + 6)}
+              x2={xScale(i + 7)}
+              y1={yScale(maPoint.y1)}
+              y2={yScale(maPoint.y2)}
+              stroke-width="0.3%"
+            />
+          {/each}
+        </g>
+      {/if}
     </svg>
   </div>
 {/if}
 
 <style>
+  .line {
+    stroke: orange;
+    opacity: 1;
+  }
   h3 {
     color: var(--sonic-silver);
     text-align: center;
