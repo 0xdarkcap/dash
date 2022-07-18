@@ -67,15 +67,10 @@
     for (let i = 1; i <= 6; i++) {
       ma6 += points[i].y;
     }
-    ma7.push({
-      y1: (points[0].y + ma6) / 7,
-      y2: (ma6 + points[7].y) / 7,
-    });
-    for (let i = 7; i < points.length; i++) {
-      ma7.push({
-        y1: ma7[i - 7].y2,
-        y2: (ma7[i - 7].y2 * 7 - points[i - 7].y + points[i].y) / 7,
-      });
+    ma7.push((points[0].y + ma6) / 7);
+    ma7.push((ma6 + points[7].y) / 7);
+    for (let i = 7; i < points.length - 1; i++) {
+      ma7.push((ma7[i - 6] * 7 - points[i - 6].y + points[i + 1].y) / 7);
     }
     loading = false;
   });
@@ -212,8 +207,8 @@
           <line
             x1={xScale(i + 6)}
             x2={xScale(i + 7)}
-            y1={yScale(maPoint.y1)}
-            y2={yScale(maPoint.y2)}
+            y1={yScale(maPoint)}
+            y2={yScale(ma7[i + 1] || ma7[i])}
             stroke="green"
             stroke-width="0.5%"
           />
