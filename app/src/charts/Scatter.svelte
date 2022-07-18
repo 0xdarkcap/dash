@@ -178,6 +178,12 @@
     height: 300px;
   }
 
+  .chart {
+    width: 100%;
+    max-width: 80vh;
+    margin: 0 auto;
+  }
+
   .marginUSDC {
     fill: yellow;
     fill-opacity: 1;
