@@ -197,10 +197,7 @@
       <span class={'usdc'}
         >{getActivePosition(activeInflectionIndex).cumUsdcMargin.toFixed(0)} USDC</span
       >
-      of {getActivePosition(activeInflectionIndex) ==
-      longs[activeInflectionIndex]
-        ? 'longs'
-        : 'shorts'} liquidate till
+      of {activePrice < productPrice ? 'longs' : 'shorts'} liquidate till
       <span style="color: white;"
         >{product == 'ETH-USD' ? 'Ξ:' : '₿: '}
         {numberWithCommas(activePrice)}$</span
