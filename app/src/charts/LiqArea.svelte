@@ -132,7 +132,7 @@
   </div>
 {:else}
   {#if activePoint == 0}
-    <h3>Liquidation Map {product}</h3>
+    <h3>Liquidation Spread {product}</h3>
   {:else}
     <h3>
       <span class={activePoint.curr == 'ETH' ? 'eth' : 'usdc'}
