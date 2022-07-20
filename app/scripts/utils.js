@@ -1,7 +1,6 @@
 import { component, currentPage } from './stores';
-import { ethers } from 'ethers';
 import Home from '../src/components/Home.svelte';
-import { GRAPH_URL, ETH, USDC } from './constants';
+import { GRAPH_URL, ETH, USDC, PRICE_DENOMINATOR } from './constants';
 
 async function getData(query) {
   const response = await fetch(GRAPH_URL, {
@@ -49,7 +48,7 @@ export async function getPrice(product) {
 export async function getPositionsData(PRODUCT) {
   const query = `
                 query{
-                    positions(where:{productId:"${PRODUCT}"}orderBy: margin, orderDirection: desc, first: 1000) {
+                    positions(where:{productId:"${PRODUCT}"}, orderBy: liquidationPrice, orderDirection: asc, first: 1000) {
                         id,
                         productId,
                         currency,
@@ -126,4 +125,14 @@ export function amountFormatter(num) {
   } else {
     return num.toFixed(1);
   }
+}
+
+export function getPositionXY(position, ethP) {
+  return {
+    x: +(position.liquidationPrice / PRICE_DENOMINATOR).toFixed(2),
+    y: +(
+      (position.margin / PRICE_DENOMINATOR) *
+      (position.currency == ETH ? ethP : 1)
+    ).toFixed(2),
+  };
 }
