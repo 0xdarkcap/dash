@@ -94,7 +94,7 @@
       >
       margin gets liquidated at
       <span style="color: white;"
-        >{product == 'ETH-USD' ? 'Ξ:' : 'BTC: '}
+        >{product == 'ETH-USD' ? 'Ξ:' : '₿: '}
         {numberWithCommas(activePoint.x)}$</span
       >
       <span class={activePoint.x > productPrice ? 'pos' : 'neg'}

@@ -2,7 +2,7 @@
   import { get } from 'svelte/store';
   import { onMount } from 'svelte';
   import { scaleLinear } from 'd3-scale';
-  import { ETH, PRICE_DENOMINATOR } from '../../scripts/constants';
+  import { ETH, USDC, PRICE_DENOMINATOR } from '../../scripts/constants';
   import { SPINNER_ICON } from '../../scripts/icons';
   import {
     BTCprice,
@@ -16,7 +16,8 @@
     getPositionXY,
   } from '../../scripts/utils';
 
-  let activePoint = 0;
+  let activePrice = null;
+  let activeInflectionIndex = null;
   let loading = true;
   let points = [];
   let longs = [];
@@ -37,7 +38,6 @@
     let data = await get(
       product == 'ETH-USD' ? positionsDataETH : positionsDataBTC
     );
-
     data.forEach((position) => {
       const { x, y } = getPositionXY(position, ethP);
       // filtering out outliers
@@ -46,14 +46,16 @@
       const margin = +(position.margin / PRICE_DENOMINATOR).toFixed(
         position.currency == ETH ? 3 : 2
       );
+      const cumEthMargin = position.currency == ETH ? margin : 0;
+      const cumUsdcMargin = position.currency == USDC ? margin : 0;
       points.push({
         x,
         y,
         curr,
         margin,
-        isLong: position.isLong,
         cumMargin: y,
-        leverage: parseInt(position.leverage),
+        cumEthMargin,
+        cumUsdcMargin,
       });
     });
     minX = points[0].x;
@@ -63,18 +65,40 @@
     shorts = points.slice(inflectionIndex);
 
     let cum = longs[0].y;
+    let cumEthMargin = longs[0].cumEthMargin;
+    let cumUsdcMargin = longs[0].cumUsdcMargin;
 
     for (let i = 0; i < longs.length; i++) {
       cum += longs[i].y;
+      if (longs[i].curr == 'ETH') cumEthMargin += longs[i].margin;
+      else cumUsdcMargin += longs[i].margin;
       longs[i].cumMargin = cum;
+      longs[i].cumEthMargin = cumEthMargin;
+      longs[i].cumUsdcMargin = cumUsdcMargin;
     }
-    longs.unshift({ x: productPrice, cumMargin: 0 });
+    longs.unshift({
+      x: +productPrice,
+      cumMargin: 0,
+      cumUsdcMargin: 0,
+      cumEthMargin: 0,
+    });
     cum = 0;
+    cumEthMargin = 0;
+    cumUsdcMargin = 0;
     for (let i = 0; i < shorts.length; i++) {
       cum += shorts[i].y;
+      if (shorts[i].curr == 'ETH') cumEthMargin += shorts[i].margin;
+      else cumUsdcMargin += shorts[i].margin;
       shorts[i].cumMargin = cum;
+      shorts[i].cumEthMargin = cumEthMargin;
+      shorts[i].cumUsdcMargin = cumUsdcMargin;
     }
-    shorts.unshift({ x: productPrice, cumMargin: 0 });
+    shorts.unshift({
+      x: +productPrice,
+      cumMargin: 0,
+      cumUsdcMargin: 0,
+      cumEthMargin: 0,
+    });
     maxY = Math.max(
       longs[longs.length - 1].cumMargin,
       shorts[shorts.length - 1].cumMargin
@@ -85,15 +109,54 @@
 
     loading = false;
   });
+
+  const getActivePosition = (activeInflectionIndex) => {
+    const arr = activePrice > productPrice ? shorts : longs;
+    return arr[activeInflectionIndex];
+  };
+  const onMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    if (activePrice > maxX) activePrice = null;
+    if (activePrice < minX) activePrice = null;
+    activePrice = +xScale.invert(x).toFixed(2);
+
+    const activeArr = activePrice > productPrice ? shorts : longs;
+    activeInflectionIndex =
+      activePrice > productPrice
+        ? shorts.findIndex((short) => short.x > +activePrice)
+        : longs.findIndex((long) => long.x < +activePrice);
+    activeInflectionIndex =
+      activeInflectionIndex == -1
+        ? activeArr.length - 1
+        : activeInflectionIndex - 1;
+
+    const newPath = `M${activeArr
+      .slice(0, activeInflectionIndex + 1)
+      .map((p) => `${xScale(p.x)},${yScale(p.cumMargin)}`)
+      .join('L')}`;
+    const newArea = `${newPath}L${xScale(
+      activeArr[activeInflectionIndex].x
+    )},${yScale(0)}L${xScale(productPrice)},${yScale(0)}Z`;
+    if (activePrice < productPrice) {
+      areaLongs = newArea;
+      areaShorts = `${pathShorts}L${xScale(maxX)},${yScale(0)}L${xScale(
+        productPrice
+      )},${yScale(0)}Z`;
+    } else {
+      areaShorts = newArea;
+      areaLongs = `${pathLongs}L${xScale(minX)},${yScale(0)}L${xScale(
+        productPrice
+      )},${yScale(0)}Z`;
+    }
+  };
+
   $: xScale = scaleLinear()
-    .domain([
-      Math.min(...points.map((i) => i.x)) - productPrice * 0.05,
-      Math.max(...points.map((i) => i.x)) + productPrice * 0.05,
-    ])
+    .domain([minX - productPrice * 0.05, maxX + productPrice * 0.05])
     .range([padding.left, width - padding.right]);
 
   $: yScale = scaleLinear()
-    .domain([0, Math.max(...yTicks)])
+    .domain([0, maxY])
     .range([height - padding.bottom, padding.top]);
 
   $: pathLongs = `M${longs
@@ -121,30 +184,41 @@
     <center><h1>Building Graph</h1></center>
   </div>
 {:else}
-  {#if activePoint == 0}
+  {#if !activePrice}
     <h3>Liquidation Spread {product}</h3>
   {:else}
     <h3>
-      <span class={activePoint.curr == 'ETH' ? 'eth' : 'usdc'}
-        >{activePoint.curr == 'ETH'
-          ? activePoint.margin + 'Ξ'
-          : activePoint.margin + ' USDC'}</span
+      <span class={'eth'}
+        >{getActivePosition(activeInflectionIndex).cumEthMargin.toFixed(
+          2
+        )}Ξ</span
       >
-      margin gets liquidated at
+      &
+      <span class={'usdc'}
+        >{getActivePosition(activeInflectionIndex).cumUsdcMargin.toFixed(2)} USDC</span
+      >
+      margin gets liquidated till
       <span style="color: white;"
-        >{product == 'ETH-USD' ? 'Ξ:' : 'BTC: '}
-        {numberWithCommas(activePoint.x)}$</span
+        >{product == 'ETH-USD' ? 'Ξ:' : '₿: '}
+        {numberWithCommas(activePrice)}$</span
       >
-      <span class={activePoint.x > productPrice ? 'pos' : 'neg'}
-        >({(((activePoint.x - productPrice) / productPrice) * 100).toFixed(
+      <span class={activePrice > productPrice ? 'pos' : 'neg'}
+        >({(((activePrice - productPrice) / productPrice) * 100).toFixed(
           1
         )}%)</span
       >
     </h3>
   {/if}
   <div
+    on:mousemove={onMouseMove}
     on:mouseleave={() => {
-      activePoint = 0;
+      activePrice = null;
+      areaShorts = `${pathShorts}L${xScale(maxX)},${yScale(0)}L${xScale(
+        productPrice
+      )},${yScale(0)}Z`;
+      areaLongs = `${pathLongs}L${xScale(minX)},${yScale(0)}L${xScale(
+        productPrice
+      )},${yScale(0)}Z`;
     }}
     class="chart"
     bind:clientWidth={width}
@@ -159,7 +233,7 @@
           </g>
         {/each}
         <g class="tick" transform="translate(0,{yScale(0)})">
-          <line x2="100%" style="transform: scaleX(1.01)" />
+          <line x2="100%" />
         </g>
       </g>
 
@@ -177,17 +251,6 @@
         <g class="tick" transform="translate({padding.left},0)">
           <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
         </g>
-        {#if activePoint != 0}
-          <g class="tick" transform="translate({xScale(activePoint.x)},0)">
-            <line y1={yScale(0)} y2={yScale(activePoint.y)} />
-            <text y={height - padding.bottom}
-              >{numberWithCommas(activePoint.x)}$</text
-            >
-          </g>
-          <g class="tick" transform="translate(0,{yScale(activePoint.y)})">
-            <line x1={xScale(activePoint.x)} x2={xScale(productPrice)} />
-          </g>
-        {/if}
       </g>
       <!-- data -->
       <path class="path-area-longs" d={areaLongs} />
