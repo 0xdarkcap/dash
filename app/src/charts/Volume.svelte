@@ -17,8 +17,8 @@
   let xValues = [];
   //   let BTCPrice;
   let ETHPrice;
-  const xTicks = [];
-  const yTicks = [];
+  let xTicks = [];
+  let yTicks = [];
   let ma7 = [];
   onMount(async () => {
     ETHPrice = await get(ETHprice);
@@ -55,13 +55,18 @@
 
     const maxY = Math.max(...points.map((i) => i.y));
     for (let i = 1; i <= 6; i++) {
-      yTicks.push(Math.ceil((maxY * i) / (6 * 1000000)) * 1000000);
       xTicks.push(
         new Date(
           86400000 * points[Math.round(((points.length - 1) * (i - 1)) / 5)].x
         )
       );
     }
+
+    yTicks = scaleLinear()
+      .domain([0, maxY])
+      .range([height - padding.bottom, padding.top])
+      .nice()
+      .ticks(6);
 
     let ma6 = 0;
     for (let i = 1; i <= 6; i++) {
@@ -150,7 +155,7 @@
             transform="translate(0,{yScale(activePoint.y) || 0})"
           >
             <line x2="100%" />
-            <text class="y-axisText"
+            <text class="y-axisText selected"
               >{amountFormatter(
                 activePoint.yETH * ETHPrice + activePoint.yUSD
               )}</text
@@ -307,6 +312,9 @@
   }
   .y-axisText {
     font-family: 'Times New Roman', Times, serif;
+  }
+  .y-axisText.selected {
+    transform: translate(0px, -4px);
   }
 
   .volumeETH {

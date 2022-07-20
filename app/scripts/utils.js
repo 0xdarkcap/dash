@@ -119,11 +119,11 @@ export function formatDate(date) {
 
 export function amountFormatter(num) {
   if (num > 1000000) {
-    return (num / 1000000).toFixed(0) + 'M';
+    return parseFloat((num / 1000000).toFixed(0)) + 'M';
   } else if (num > 999 && num < 1000000) {
-    return (num / 1000).toFixed(1) + 'K';
+    return parseFloat((num / 1000).toFixed(1)) + 'K';
   } else {
-    return num.toFixed(1);
+    return parseFloat(num.toFixed(1));
   }
 }
 

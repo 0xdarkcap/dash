@@ -18,7 +18,8 @@
   //   let BTCPrice;
   let ETHPrice;
   const xTicks = [];
-  const yTicks = [];
+  let yTicks = [];
+  let maxY;
   onMount(async () => {
     ETHPrice = await get(ETHprice);
     const getDayData = async () => {
@@ -33,18 +34,22 @@
           xValues.push(parseInt(element.id.slice(43)));
         }
         if (currency == ETH) {
-          points[points.length - 1].yETH = parseInt(
+          points[points.length - 1].yETH = +(
             element.cumulativeFees / PRICE_DENOMINATOR
-          );
+          ).toFixed(2);
         } else {
-          points[points.length - 1].yUSD = parseInt(
+          points[points.length - 1].yUSD = +(
             element.cumulativeFees / PRICE_DENOMINATOR
-          );
+          ).toFixed(2);
         }
-        if (points[points.length - 1].yUSD && points[points.length - 1].yETH) {
-          points[points.length - 1].y =
+        if (
+          points[points.length - 1].yUSD != undefined &&
+          points[points.length - 1].yETH != undefined
+        ) {
+          points[points.length - 1].y = +(
             ETHPrice * points[points.length - 1].yETH +
-            points[points.length - 1].yUSD;
+            points[points.length - 1].yUSD
+          ).toFixed(2);
         }
       };
       data.forEach(pushElementToData);
@@ -52,18 +57,21 @@
 
     await getDayData();
 
-    const maxY = points
-      .map((i) => i.y)
-      .reduce((acc, curr) => (curr > acc ? curr : acc), 0);
-    console.log(maxY);
+    maxY = Math.max(...points.map((i) => i.y));
+
     for (let i = 1; i <= 6; i++) {
-      yTicks.push(Math.ceil((maxY * i) / 6));
       xTicks.push(
         new Date(
           86400000 * points[Math.round(((points.length - 1) * (i - 1)) / 5)].x
         )
       );
     }
+    yTicks = scaleLinear()
+      .domain([0, maxY])
+      .range([height - padding.bottom, padding.top])
+      .nice()
+      .ticks(6);
+    maxY = Math.max(maxY, yTicks[yTicks.length - 1]);
     loading = false;
   });
 
@@ -103,11 +111,11 @@
     <h3>
       {date} | Ξ:
       <span class="volumeETH"
-        >{numberWithCommas(Math.round(activePoint.yETH))}</span
+        >{numberWithCommas(activePoint.yETH.toFixed(2))}</span
       >
       | USDC:
       <span class="volumeUSDC"
-        >{numberWithCommas(Math.round(activePoint.yUSD))}$</span
+        >{numberWithCommas(activePoint.yUSD.toFixed(0))}$</span
       >
     </h3>
   {/if}
@@ -142,7 +150,7 @@
             transform="translate(0,{yScale(activePoint.y) || 0})"
           >
             <line x2="100%" />
-            <text class="y-axisText"
+            <text class="y-axisText selected"
               >{amountFormatter(
                 activePoint.yETH * ETHPrice + activePoint.yUSD
               )}</text
@@ -281,6 +289,9 @@
   }
   .y-axisText {
     font-family: 'Times New Roman', Times, serif;
+  }
+  .y-axisText.selected {
+    transform: translate(0px, -4px);
   }
 
   .volumeETH {
