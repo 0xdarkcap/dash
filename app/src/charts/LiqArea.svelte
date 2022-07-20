@@ -187,17 +187,20 @@
   {#if !activePrice}
     <h3>Liquidation Spread {product}</h3>
   {:else}
-    <h3>
+    <h5>
       <span class={'eth'}
         >{getActivePosition(activeInflectionIndex).cumEthMargin.toFixed(
-          2
+          0
         )}Ξ</span
       >
       &
       <span class={'usdc'}
-        >{getActivePosition(activeInflectionIndex).cumUsdcMargin.toFixed(2)} USDC</span
+        >{getActivePosition(activeInflectionIndex).cumUsdcMargin.toFixed(0)} USDC</span
       >
-      margin gets liquidated till
+      of {getActivePosition(activeInflectionIndex) ==
+      longs[activeInflectionIndex]
+        ? 'longs'
+        : 'shorts'} liquidate till
       <span style="color: white;"
         >{product == 'ETH-USD' ? 'Ξ:' : '₿: '}
         {numberWithCommas(activePrice)}$</span
@@ -207,7 +210,7 @@
           1
         )}%)</span
       >
-    </h3>
+    </h5>
   {/if}
   <div
     on:mousemove={onMouseMove}
@@ -337,6 +340,11 @@
     text-anchor: middle;
   }
   h3 {
+    color: var(--sonic-silver);
+    text-align: center;
+    position: relative;
+  }
+  h5 {
     color: var(--sonic-silver);
     text-align: center;
     position: relative;
