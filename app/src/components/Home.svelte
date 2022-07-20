@@ -12,6 +12,7 @@
   import Revenue from '../charts/Revenue.svelte';
   import Pnl from '../charts/Pnl.svelte';
   import { ETHUSD, BTCUSD } from '../../scripts/constants';
+  import LiqArea from '../charts/LiqArea.svelte';
   let loading = true;
 
   onMount(async () => {
@@ -42,6 +43,12 @@
     </div>
     <div class="chart">
       <Revenue />
+    </div>
+    <div class="chart">
+      <LiqArea product="ETH-USD" />
+    </div>
+    <div class="chart">
+      <LiqArea product="BTC-USD" />
     </div>
   </div>
 {/if}
