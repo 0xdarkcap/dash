@@ -103,9 +103,15 @@
       longs[longs.length - 1].cumMargin,
       shorts[shorts.length - 1].cumMargin
     );
-    for (let i = 1; i <= 5; i++) {
-      yTicks.push(minY + (i * maxY) / 5);
-    }
+
+    yTicks = scaleLinear()
+      .domain([0, maxY])
+      .range([height - padding.bottom, padding.top])
+      .nice()
+      .ticks(6);
+    yTicks.shift();
+
+    maxY = Math.max(maxY, yTicks[yTicks.length - 1]);
 
     loading = false;
   });
@@ -152,7 +158,7 @@
   };
 
   $: xScale = scaleLinear()
-    .domain([minX - productPrice * 0.05, maxX + productPrice * 0.05])
+    .domain([minX, maxX])
     .range([padding.left, width - padding.right]);
 
   $: yScale = scaleLinear()
@@ -184,31 +190,33 @@
     <center><h1>Building Graph</h1></center>
   </div>
 {:else}
-  {#if !activePrice}
-    <h3>Liquidation Spread {product}</h3>
-  {:else}
-    <h5>
-      <span class={'eth'}
-        >{getActivePosition(activeInflectionIndex).cumEthMargin.toFixed(
-          0
-        )}Ξ</span
-      >
-      &
-      <span class={'usdc'}
-        >{getActivePosition(activeInflectionIndex).cumUsdcMargin.toFixed(0)} USDC</span
-      >
-      of {activePrice < productPrice ? 'longs' : 'shorts'} liquidate till
-      <span style="color: white;"
-        >{product == 'ETH-USD' ? 'Ξ:' : '₿: '}
-        {numberWithCommas(activePrice)}$</span
-      >
-      <span class={activePrice > productPrice ? 'pos' : 'neg'}
-        >({(((activePrice - productPrice) / productPrice) * 100).toFixed(
-          1
-        )}%)</span
-      >
-    </h5>
-  {/if}
+  <div class="title-container">
+    {#if !activePrice}
+      <h3>Liquidation Spread {product}</h3>
+    {:else}
+      <h3 class="hover-text">
+        <span class={'eth'}
+          >{getActivePosition(activeInflectionIndex).cumEthMargin.toFixed(
+            0
+          )}Ξ</span
+        >
+        &
+        <span class={'usdc'}
+          >{getActivePosition(activeInflectionIndex).cumUsdcMargin.toFixed(0)} USDC</span
+        >
+        of {activePrice < productPrice ? 'longs' : 'shorts'} liquidate till
+        <span style="color: white;"
+          >{product == 'ETH-USD' ? 'Ξ:' : '₿: '}
+          {numberWithCommas(activePrice)}$</span
+        >
+        <span class={activePrice > productPrice ? 'pos' : 'neg'}
+          >({(((activePrice - productPrice) / productPrice) * 100).toFixed(
+            1
+          )}%)</span
+        >
+      </h3>
+    {/if}
+  </div>
   <div
     on:mousemove={onMouseMove}
     on:mouseleave={() => {
@@ -229,18 +237,18 @@
       <g class="axis y-axis">
         {#each yTicks as tick}
           <g class="tick tick-{tick}" transform="translate(0, {yScale(tick)})">
-            <text x={padding.left - 8} y="+4">{amountFormatter(tick)}</text>
+            <text x={padding.left - 8} y="+8">{amountFormatter(tick)}</text>
           </g>
         {/each}
         <g class="tick" transform="translate(0,{yScale(0)})">
-          <line x2="100%" />
+          <line x2="100%" x1={padding.left} />
         </g>
       </g>
 
       <!-- x axis -->
       <g class="axis x-axis">
         <g class="tickETHP" transform="translate({xScale(productPrice)},0)">
-          <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
+          <line y1={yScale(0)} y2={yScale(maxY)} />
         </g>
         <g class="tick" transform="translate({xScale(productPrice)},0)">
           <text class="ethScale" y={height - padding.bottom + 40}
@@ -249,7 +257,7 @@
           >
         </g>
         <g class="tick" transform="translate({padding.left},0)">
-          <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
+          <line y1={yScale(0)} y2={yScale(maxY)} />
         </g>
       </g>
       <!-- data -->
@@ -336,15 +344,21 @@
   .x-axis text {
     text-anchor: middle;
   }
+  .title-container {
+    height: 4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   h3 {
     color: var(--sonic-silver);
     text-align: center;
     position: relative;
+    line-height: 22px;
+    margin: 0;
   }
-  h5 {
-    color: var(--sonic-silver);
-    text-align: center;
-    position: relative;
+  h3.hover-text {
+    font-size: 1em;
   }
   .y-axis text {
     text-anchor: end;

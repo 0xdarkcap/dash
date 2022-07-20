@@ -57,9 +57,14 @@
     minX = points[0].x;
     maxX = points[points.length - 1].x;
 
-    for (let i = 1; i <= 5; i++) {
-      yTicks.push(minY + (i * maxY) / 5);
-    }
+    yTicks = scalePow()
+      .exponent(0.4)
+      .domain([0, maxY])
+      .range([height - padding.bottom, padding.top])
+      .nice()
+      .ticks(6);
+    yTicks.shift();
+    maxY = Math.max(maxY, yTicks[yTicks.length - 1]);
 
     loading = false;
   });
@@ -117,18 +122,18 @@
       <g class="axis y-axis">
         {#each yTicks as tick}
           <g class="tick tick-{tick}" transform="translate(0, {yScale(tick)})">
-            <text x={padding.left - 8} y="+4">{amountFormatter(tick)}</text>
+            <text x={padding.left - 8} y="+8">{amountFormatter(tick)}</text>
           </g>
         {/each}
         <g class="tick" transform="translate(0,{yScale(0)})">
-          <line x2="100%" style="transform: scaleX(1.01)" />
+          <line x2="100%" x1={padding.left} />
         </g>
       </g>
 
       <!-- x axis -->
       <g class="axis x-axis">
         <g class="tickETHP" transform="translate({xScale(productPrice)},0)">
-          <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
+          <line y1={yScale(0)} y2={yScale(maxY)} />
         </g>
         <g class="tick" transform="translate({xScale(productPrice)},0)">
           <text class="ethScale" y={height - padding.bottom + 40}
@@ -137,7 +142,7 @@
           >
         </g>
         <g class="tick" transform="translate({padding.left},0)">
-          <line y1={yScale(0)} y2={yScale(Math.max(...yTicks))} />
+          <line y1={yScale(0)} y2={yScale(maxY)} />
         </g>
         {#if activePoint != 0}
           <g class="tick" transform="translate({xScale(activePoint.x)},0)">
