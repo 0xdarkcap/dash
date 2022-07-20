@@ -1,7 +1,7 @@
 <script>
   import { get } from 'svelte/store';
   import { onMount } from 'svelte';
-  import { scaleLinear, scalePow } from 'd3-scale';
+  import { scaleLinear } from 'd3-scale';
   import { ETH, PRICE_DENOMINATOR } from '../../scripts/constants';
   import { SPINNER_ICON } from '../../scripts/icons';
   import {
@@ -10,9 +10,12 @@
     positionsDataBTC,
     positionsDataETH,
   } from '../../scripts/stores';
-  import { numberWithCommas, amountFormatter } from '../../scripts/utils';
-  let minX;
-  let maxX;
+  import {
+    numberWithCommas,
+    amountFormatter,
+    getPositionXY,
+  } from '../../scripts/utils';
+
   let activePoint = 0;
   let loading = true;
   let points = [];
@@ -20,6 +23,10 @@
   let shorts = [];
   export let product;
   let ethP;
+  let minX = 0;
+  let maxX = 0;
+  let minY = 0;
+  let maxY = 0;
   let width = 500;
   let height = 200;
   const padding = { top: 20, right: 15, bottom: 20, left: 25 };
@@ -30,64 +37,48 @@
     let data = await get(
       product == 'ETH-USD' ? positionsDataETH : positionsDataBTC
     );
+
     data.forEach((position) => {
-      if (position.currency == ETH) {
-        points.push({
-          x: +(position.liquidationPrice / PRICE_DENOMINATOR).toFixed(2),
-          y: +((position.margin / PRICE_DENOMINATOR) * ethP).toFixed(2),
-          curr: 'ETH',
-          margin: +(position.margin / PRICE_DENOMINATOR).toFixed(3),
-          isLong: position.isLong,
-          cumMargin: 0,
-          leverage: parseInt(position.leverage),
-        });
-      } else {
-        points.push({
-          x: +(position.liquidationPrice / PRICE_DENOMINATOR).toFixed(2),
-          y: +(position.margin / PRICE_DENOMINATOR).toFixed(2),
-          curr: 'USDC',
-          margin: +(position.margin / PRICE_DENOMINATOR).toFixed(2),
-          isLong: position.isLong,
-          cumMargin: 0,
-          leverage: parseInt(position.leverage),
-        });
-      }
+      const { x, y } = getPositionXY(position, ethP);
+      // filtering out outliers
+      if (!(x < productPrice * 5 && y > 10)) return;
+      const curr = position.currency == ETH ? 'ETH' : 'USDC';
+      const margin = +(position.margin / PRICE_DENOMINATOR).toFixed(
+        position.currency == ETH ? 3 : 2
+      );
+      points.push({
+        x,
+        y,
+        curr,
+        margin,
+        isLong: position.isLong,
+        cumMargin: y,
+        leverage: parseInt(position.leverage),
+      });
     });
-
-    points = points.filter(
-      (position) => position.x < productPrice * 5 && position.y > 10
-    );
-
-    points.sort(function (a, b) {
-      return a.x - b.x;
-    });
-    $: minX = points[0].x;
-    $: maxX = points[points.length - 1].x;
-    let inflectionIndex = 0;
-    for (let i = 0; i < points.length; i++) {
-      if (points[i].x < productPrice) {
-        inflectionIndex = i + 1;
-      }
-    }
-    longs = points.slice(0, inflectionIndex).sort(function (a, b) {
-      return b.x - a.x;
-    });
+    minX = points[0].x;
+    maxX = points[points.length - 1].x;
+    let inflectionIndex = points.findIndex((point) => point.x > productPrice);
+    longs = points.slice(0, inflectionIndex).reverse();
     shorts = points.slice(inflectionIndex);
 
     let cum = longs[0].y;
 
-    for (let i = 1; i < longs.length; i++) {
+    for (let i = 0; i < longs.length; i++) {
       cum += longs[i].y;
       longs[i].cumMargin = cum;
     }
+    longs.unshift({ x: productPrice, cumMargin: 0 });
     cum = 0;
-    for (let i = 1; i < shorts.length; i++) {
+    for (let i = 0; i < shorts.length; i++) {
       cum += shorts[i].y;
       shorts[i].cumMargin = cum;
     }
-    console.log(longs);
-    const maxY = Math.max(...points.map((i) => i.cumMargin));
-    const minY = Math.min(...points.map((i) => i.cumMargin));
+    shorts.unshift({ x: productPrice, cumMargin: 0 });
+    maxY = Math.max(
+      longs[longs.length - 1].cumMargin,
+      shorts[shorts.length - 1].cumMargin
+    );
     for (let i = 1; i <= 5; i++) {
       yTicks.push(minY + (i * maxY) / 5);
     }
@@ -101,8 +92,7 @@
     ])
     .range([padding.left, width - padding.right]);
 
-  $: yScale = scalePow()
-    .exponent(0.4)
+  $: yScale = scaleLinear()
     .domain([0, Math.max(...yTicks)])
     .range([height - padding.bottom, padding.top]);
 
@@ -294,5 +284,6 @@
   .ethScale {
     fill: white;
     font-size: large;
+    transform: translate(0px, -15px);
   }
 </style>

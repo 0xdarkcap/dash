@@ -10,13 +10,21 @@
     positionsDataBTC,
     positionsDataETH,
   } from '../../scripts/stores';
-  import { numberWithCommas, amountFormatter } from '../../scripts/utils';
+  import {
+    numberWithCommas,
+    amountFormatter,
+    getPositionXY,
+  } from '../../scripts/utils';
 
   let activePoint = 0;
   let loading = true;
   let points = [];
   export let product;
   let ethP;
+  let minX = 0;
+  let maxX = 0;
+  let minY = 0;
+  let maxY = 0;
   let width = 500;
   let height = 200;
   const padding = { top: 20, right: 15, bottom: 20, left: 25 };
@@ -28,33 +36,27 @@
       product == 'ETH-USD' ? positionsDataETH : positionsDataBTC
     );
     data.forEach((position) => {
-      if (position.currency == ETH) {
-        points.push({
-          x: +(position.liquidationPrice / PRICE_DENOMINATOR).toFixed(2),
-          y: +((position.margin / PRICE_DENOMINATOR) * ethP).toFixed(2),
-          curr: 'ETH',
-          margin: +(position.margin / PRICE_DENOMINATOR).toFixed(3),
-          isLong: position.isLong,
-          leverage: parseInt(position.leverage),
-        });
-      } else {
-        points.push({
-          x: +(position.liquidationPrice / PRICE_DENOMINATOR).toFixed(2),
-          y: +(position.margin / PRICE_DENOMINATOR).toFixed(2),
-          curr: 'USDC',
-          margin: +(position.margin / PRICE_DENOMINATOR).toFixed(2),
-          isLong: position.isLong,
-          leverage: parseInt(position.leverage),
-        });
-      }
+      const { x, y } = getPositionXY(position, ethP);
+      // filtering out outliers
+      if (!(x < productPrice * 5 && y > 10)) return;
+      const curr = position.currency == ETH ? 'ETH' : 'USDC';
+      const margin = +(position.margin / PRICE_DENOMINATOR).toFixed(
+        position.currency == ETH ? 3 : 2
+      );
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+      points.push({
+        x,
+        y,
+        curr,
+        margin,
+        isLong: position.isLong,
+        leverage: parseInt(position.leverage),
+      });
     });
+    minX = points[0].x;
+    maxX = points[points.length - 1].x;
 
-    points = points.filter(
-      (position) => position.x < productPrice * 5 && position.y > 10
-    );
-
-    const maxY = Math.max(...points.map((i) => i.y));
-    const minY = Math.min(...points.map((i) => i.y));
     for (let i = 1; i <= 5; i++) {
       yTicks.push(minY + (i * maxY) / 5);
     }
@@ -62,15 +64,12 @@
     loading = false;
   });
   $: xScale = scaleLinear()
-    .domain([
-      Math.min(...points.map((i) => i.x)) - productPrice * 0.05,
-      Math.max(...points.map((i) => i.x)) + productPrice * 0.05,
-    ])
+    .domain([minX - productPrice * 0.05, maxX + productPrice * 0.05])
     .range([padding.left, width - padding.right]);
 
   $: yScale = scalePow()
     .exponent(0.4)
-    .domain([0, Math.max(...yTicks)])
+    .domain([0, maxY])
     .range([height - padding.bottom, padding.top]);
 
   $: yTicks = [];
