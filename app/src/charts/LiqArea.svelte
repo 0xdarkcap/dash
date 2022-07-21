@@ -252,7 +252,7 @@
         </g>
         <g class="tick" transform="translate({xScale(productPrice)},0)">
           <text class="ethScale" y={height - padding.bottom + 40}
-            >{product == 'ETH-USD' ? 'Ξ' : 'BTC'}: {' '}
+            >{product == 'ETH-USD' ? 'Ξ' : '₿'}: {' '}
             {numberWithCommas(productPrice)}$</text
           >
         </g>
