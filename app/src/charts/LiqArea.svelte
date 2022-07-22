@@ -41,7 +41,7 @@
     data.forEach((position) => {
       const { x, y } = getPositionXY(position, ethP);
       // filtering out outliers
-      if (!(x < productPrice * 5 && y > 10)) return;
+      if (!(x < productPrice * 5)) return;
       const curr = position.currency == ETH ? 'ETH' : 'USDC';
       const margin = +(position.margin / PRICE_DENOMINATOR).toFixed(
         position.currency == ETH ? 3 : 2
@@ -61,47 +61,48 @@
     minX = points[0].x;
     maxX = points[points.length - 1].x;
     let inflectionIndex = points.findIndex((point) => point.x > productPrice);
-    longs = points.slice(0, inflectionIndex).reverse();
-    shorts = points.slice(inflectionIndex);
+    let cum = 0;
+    let cumEthMargin = 0;
+    let cumUsdcMargin = 0;
+    const setPositionMargin = (position) => {
+      cum += position.y;
+      if (position.curr == 'ETH') cumEthMargin += position.margin;
+      else cumUsdcMargin += position.margin;
+      position.cumMargin = cum;
+      position.cumEthMargin = cumEthMargin;
+      position.cumUsdcMargin = cumUsdcMargin;
+    };
 
-    let cum = longs[0].y;
-    let cumEthMargin = longs[0].cumEthMargin;
-    let cumUsdcMargin = longs[0].cumUsdcMargin;
-
-    for (let i = 0; i < longs.length; i++) {
-      cum += longs[i].y;
-      if (longs[i].curr == 'ETH') cumEthMargin += longs[i].margin;
-      else cumUsdcMargin += longs[i].margin;
-      longs[i].cumMargin = cum;
-      longs[i].cumEthMargin = cumEthMargin;
-      longs[i].cumUsdcMargin = cumUsdcMargin;
-    }
-    longs.unshift({
+    const initialMargin = {
       x: +productPrice,
       cumMargin: 0,
       cumUsdcMargin: 0,
       cumEthMargin: 0,
-    });
-    cum = 0;
-    cumEthMargin = 0;
-    cumUsdcMargin = 0;
-    for (let i = 0; i < shorts.length; i++) {
-      cum += shorts[i].y;
-      if (shorts[i].curr == 'ETH') cumEthMargin += shorts[i].margin;
-      else cumUsdcMargin += shorts[i].margin;
-      shorts[i].cumMargin = cum;
-      shorts[i].cumEthMargin = cumEthMargin;
-      shorts[i].cumUsdcMargin = cumUsdcMargin;
+    };
+    // if there are no longs:
+    if (inflectionIndex == 0) {
+      longs = [];
+    } else {
+      longs = points.slice(0, inflectionIndex).reverse();
+      longs.forEach(setPositionMargin);
     }
-    shorts.unshift({
-      x: +productPrice,
-      cumMargin: 0,
-      cumUsdcMargin: 0,
-      cumEthMargin: 0,
-    });
+    longs.unshift(initialMargin);
+
+    // if there are no shorts:
+    if (inflectionIndex == -1) {
+      shorts = [];
+    } else {
+      shorts = points.slice(inflectionIndex);
+      cum = 0;
+      cumEthMargin = 0;
+      cumUsdcMargin = 0;
+      shorts.forEach(setPositionMargin);
+    }
+    shorts.unshift(initialMargin);
+
     maxY = Math.max(
-      longs[longs.length - 1].cumMargin,
-      shorts[shorts.length - 1].cumMargin
+      longs[longs.length - 1]?.cumMargin,
+      shorts[shorts.length - 1]?.cumMargin
     );
 
     yTicks = scaleLinear()
