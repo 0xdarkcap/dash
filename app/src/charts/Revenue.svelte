@@ -175,29 +175,30 @@
       <!--bars-->
       <g class={focus == true ? 'inactive' : 'active'}>
         {#each points as point, i}
-          <g class="stacked-bar">
+          <g
+            class="stacked-bar"
+            on:mouseenter={() => {
+              activePoint = point;
+              date = timeConverter(point.x * 86400);
+            }}
+          >
             <!-- ETH bar: -->
             <rect
-              on:mouseenter={() => {
-                activePoint = point;
-                date = timeConverter(point.x * 86400);
-              }}
-              x={xScale(i) + 2}
-              y={yScale(ETHPrice * point.yETH) || 0}
+              x={xScale(i).toFixed(2) + 2}
+              y={yScale(ETHPrice * point.yETH).toFixed(2) || 0}
               width={barWidth || 0}
-              height={yScale(0) - yScale(ETHPrice * point.yETH) || 0}
+              height={(yScale(0) - yScale(ETHPrice * point.yETH)).toFixed(2) ||
+                0}
             />
             <!-- USD bar: -->
             <rect
-              on:mouseenter={() => {
-                activePoint = point;
-                date = timeConverter(point.x * 86400);
-              }}
               class="usd"
-              x={xScale(i) + 2}
-              y={yScale(point.y) || 0}
+              x={xScale(i).toFixed(2) + 2}
+              y={yScale(point.y).toFixed(2) || 0}
               width={barWidth || 0}
-              height={yScale(ETHPrice * point.yETH) - yScale(point.y) || 0}
+              height={(yScale(ETHPrice * point.yETH) - yScale(point.y)).toFixed(
+                2
+              ) || 0}
             />
           </g>
         {/each}
