@@ -13,6 +13,7 @@ export const positionsDataETH = writable([]);
 export const positionsDataBTC = writable([]);
 
 export const tradeData = writable([]);
+export const positionsData = writable([]);
 
 export const ETHprice = writable();
 

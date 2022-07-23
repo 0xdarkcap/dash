@@ -46,16 +46,20 @@ export async function getPrice(product) {
   }
 }
 
-export async function getPositionsData(PRODUCT) {
+export async function getPositionsData(queryOptions) {
+  const filter = queryOptions.product
+    ? `where:{productId:"${queryOptions.product}"},`
+    : '';
   const query = `
                 query{
-                    positions(where:{productId:"${PRODUCT}"}, orderBy: liquidationPrice, orderDirection: asc, first: 1000) {
+                    positions(${filter} orderBy: ${queryOptions.orderBy}, orderDirection: ${queryOptions.orderDirection}, first: ${queryOptions.first}) {
                         id,
                         productId,
                         currency,
                         leverage,
                         price,
                         margin,
+                        size,
                         user,
                         liquidationPrice,
                         isLong,
