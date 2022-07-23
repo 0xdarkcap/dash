@@ -1,6 +1,7 @@
 import { component, currentPage } from './stores';
 import Home from '../src/components/Home.svelte';
-import { GRAPH_URL, ETH, USDC, PRICE_DENOMINATOR } from './constants';
+import Trades from '../src/components/Trades.svelte';
+import { GRAPH_URL, ETH, PRICE_DENOMINATOR } from './constants';
 
 async function getData(query) {
   const response = await fetch(GRAPH_URL, {
@@ -67,22 +68,44 @@ export async function getPositionsData(PRODUCT) {
   return json.data.positions;
 }
 
+export async function getTradesData() {
+  try {
+    const query = `
+      query {
+        trades(
+          first: 100
+          orderDirection: desc
+          orderBy: timestamp
+        ) {
+          margin
+          size
+          pnl
+          entryPrice
+          closePrice
+          productId
+          isLong
+          leverage
+          wasLiquidated
+          currency
+        }
+      }
+    `;
+    const json = await getData(query);
+    return json?.data?.trades;
+  } catch (err) {
+    return [];
+  }
+}
+
 export function loadRoute(path, isInitial) {
   if (!path || path == '/' || path.includes('/home')) {
     component.set(Home);
     currentPage.set('home');
+  } else if (path.includes('/trades')) {
+    component.set(Trades);
+    currentPage.set('trade');
+    document.title = `Trade | CAP`;
   }
-  /*
-      else if (path.includes('./pools')) {
-          component.set('pools');
-          currentPage.set('pools');
-          document.title('CAP | pool stats');
-      }
-      else if (path.includes('./trades')) {
-          component.set('trades');
-          currentPage.set('trades');
-          document.title('CAP | trades');
-      }*/
 }
 
 export function numberWithCommas(x) {
@@ -117,7 +140,7 @@ export function formatDate(date) {
   return `${day}/${month}`;
 }
 
-export function amountFormatter(num) {
+export function priceTickFormatter(num) {
   if (num > 1000000) {
     return parseFloat((num / 1000000).toFixed(0)) + 'M';
   } else if (num > 999 && num < 1000000) {
@@ -125,6 +148,11 @@ export function amountFormatter(num) {
   } else {
     return parseFloat(num.toFixed(1));
   }
+}
+
+export function priceFormatter(price, currency) {
+  const precision = currency == ETH ? 3 : 2;
+  return +(price / PRICE_DENOMINATOR).toFixed(precision);
 }
 
 export function getPositionXY(position, ethP) {

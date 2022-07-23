@@ -66,12 +66,4 @@
     margin: auto;
     margin-top: 20px;
   }
-  .loading-icon :global(svg) {
-    height: 50px;
-  }
-  .empty {
-    padding-top: 10%;
-    display: flex;
-    justify-content: center;
-  }
 </style>

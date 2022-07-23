@@ -4,12 +4,13 @@
   import { SPINNER_ICON } from '../../scripts/icons';
   import { onMount } from 'svelte';
   import { dayData, ETHprice } from '../../scripts/stores';
-  import { ETH, PRICE_DENOMINATOR } from '../../scripts/constants';
+  import { ETH } from '../../scripts/constants';
   import {
     numberWithCommas,
     timeConverter,
     formatDate,
-    amountFormatter,
+    priceTickFormatter,
+    priceFormatter,
   } from '../../scripts/utils';
 
   let loading = true;
@@ -34,13 +35,13 @@
           xValues.push(parseInt(element.id.slice(43)));
         }
         if (currency == ETH) {
-          points[points.length - 1].yETH = +(
-            element.cumulativeFees / PRICE_DENOMINATOR
-          ).toFixed(2);
+          points[points.length - 1].yETH = priceFormatter(
+            element.cumulativeFees
+          );
         } else {
-          points[points.length - 1].yUSD = +(
-            element.cumulativeFees / PRICE_DENOMINATOR
-          ).toFixed(2);
+          points[points.length - 1].yUSD = priceFormatter(
+            element.cumulativeFees
+          );
         }
         if (
           points[points.length - 1].yUSD != undefined &&
@@ -139,7 +140,7 @@
               transform="translate(0, {yScale(tick) || 0})"
             >
               <line x2="100%" style="transform: scaleX(1.01)" />
-              <text y="-4" class="y-axisText">{amountFormatter(tick)}</text>
+              <text y="-4" class="y-axisText">{priceTickFormatter(tick)}</text>
             </g>
           {/each}
         </g>
@@ -151,7 +152,7 @@
           >
             <line x2="100%" />
             <text class="y-axisText selected"
-              >{amountFormatter(
+              >{priceTickFormatter(
                 activePoint.yETH * ETHPrice + activePoint.yUSD
               )}</text
             >
@@ -274,15 +275,6 @@
   g.stacked-bar:hover > rect.usd {
     fill: yellow;
     opacity: 1;
-  }
-
-  .loading-icon :global(svg) {
-    height: 50px;
-  }
-  .empty {
-    padding-top: 10%;
-    display: flex;
-    justify-content: center;
   }
 
   .y-axis {

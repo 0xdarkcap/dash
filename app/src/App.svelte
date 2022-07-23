@@ -7,9 +7,10 @@
   import Footer from './components/Footer.svelte';
 
   onMount(async () => {
-    $: ETHprice.set(await getPrice('ETH-USD'));
-    $: BTCprice.set(await getPrice('BTC-USD'));
+    ETHprice.set(await getPrice('ETH-USD'));
+    BTCprice.set(await getPrice('BTC-USD'));
     loadRoute(location.hash, true);
+    window.onpopstate = () => loadRoute(location.hash);
   });
 </script>
 

@@ -75,3 +75,12 @@ button:not(:disabled):active {
 button:focus {
 	border-color: #666;
 }
+
+.loading-icon, svg {
+	height: 50px;
+}
+.empty {
+	padding-top: 10%;
+	display: flex;
+	justify-content: center;
+}
