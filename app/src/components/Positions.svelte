@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte';
   import { priceFormatter } from '../../scripts/utils';
   import { ETH, ETHUSD } from '../../scripts/constants';
 
@@ -15,10 +16,14 @@
       sortedData = sortedData.reverse();
     } else {
       sortBy = _sortBy;
-      sortOrder = 'asc';
-      sortedData = sortedData.sort((a, b) => a[_sortBy] - b[_sortBy]);
+      sortOrder = 'desc';
+      sortedData = sortedData.sort((a, b) => b[_sortBy] - a[_sortBy]);
     }
   };
+
+  onMount(() => {
+    changeSort('uplInDollars');
+  });
 </script>
 
 <div class="history">
@@ -48,9 +53,13 @@
         >{sortBy == 'leverage' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
       >
     </div>
-    <div class="column column-pnl" on:click={() => changeSort('upl')}>
+    <div class="column column-pnl" on:click={() => changeSort('uplInDollars')}>
       UPL <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
-        >{sortBy == 'upl' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+        >{sortBy == 'uplInDollars'
+          ? sortOrder == 'asc'
+            ? '↑'
+            : '↓'
+          : ''}</span
       >
     </div>
     <div

@@ -15,7 +15,7 @@
   let loading = true;
   let panel = 'positions';
 
-  function calculateUPLs(_positions, _prices) {
+  function calculateUPLs(_positions) {
     for (const position of _positions) {
       const upl = getUPL(
         position,
@@ -23,6 +23,7 @@
       );
       if (upl == undefined) continue;
       position.upl = upl.toFixed(position.currency == ETH ? 2 : 0);
+      position.uplInDollars = position.currency == ETH ? upl * $ETHprice : upl;
       position.uplPercent = (
         (100 * upl) /
         (+position.margin / PRICE_DENOMINATOR)
