@@ -56,7 +56,7 @@
           {priceFormatter(trade.leverage)}×
         </div>
         <div class={`column column-pnl ${+trade.pnl < 0 ? 'neg' : 'pos'}`}>
-          {priceFormatter(trade.pnl)}
+          {priceFormatter(trade.pnl)}{trade.currency == ETH ? 'Ξ' : '$'}
           <span class="pnl-percent"
             >({((100 * trade.pnl) / trade.margin).toFixed(2)}%)</span
           >

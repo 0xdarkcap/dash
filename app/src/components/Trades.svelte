@@ -1,13 +1,35 @@
 <script>
   import { onMount } from 'svelte';
-  import { tradeData, positionsData } from '../../scripts/stores';
-  import { getTradesData, getPositionsData } from '../../scripts/utils';
+  import {
+    tradeData,
+    positionsData,
+    ETHprice,
+    BTCprice,
+  } from '../../scripts/stores';
+  import { getTradesData, getPositionsData, getUPL } from '../../scripts/utils';
+  import { BTCUSD, ETH, PRICE_DENOMINATOR } from '../../scripts/constants';
   import { SPINNER_ICON } from '../../scripts/icons';
   import Positions from './Positions.svelte';
   import History from './History.svelte';
 
   let loading = true;
   let panel = 'positions';
+
+  function calculateUPLs(_positions, _prices) {
+    for (const position of _positions) {
+      const upl = getUPL(
+        position,
+        position.productId == BTCUSD ? $BTCprice : $ETHprice
+      );
+      if (upl == undefined) continue;
+      position.upl = upl.toFixed(position.currency == ETH ? 2 : 0);
+      position.uplPercent = (
+        (100 * upl) /
+        (+position.margin / PRICE_DENOMINATOR)
+      ).toFixed(2);
+    }
+  }
+
   onMount(async () => {
     tradeData.set(await getTradesData());
     const queryOptions = {
@@ -15,7 +37,9 @@
       orderDirection: 'desc',
       first: 1000,
     };
-    positionsData.set(await getPositionsData(queryOptions));
+    const _positionsData = await getPositionsData(queryOptions);
+    calculateUPLs(_positionsData);
+    positionsData.set(_positionsData);
     loading = false;
   });
 

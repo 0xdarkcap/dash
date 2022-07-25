@@ -1,7 +1,13 @@
 import { component, currentPage } from './stores';
 import Home from '../src/components/Home.svelte';
 import Trades from '../src/components/Trades.svelte';
-import { GRAPH_URL, ETH, PRICE_DENOMINATOR } from './constants';
+import {
+  GRAPH_URL,
+  ETH,
+  PRICE_DENOMINATOR,
+  PRODUCTS,
+  BTCUSD,
+} from './constants';
 
 async function getData(query) {
   const response = await fetch(GRAPH_URL, {
@@ -167,4 +173,56 @@ export function getPositionXY(position, ethP) {
       (position.currency == ETH ? ethP : 1)
     ).toFixed(2),
   };
+}
+
+export function getPriceImpact(size, _productId, _currency) {
+  if (!size || !_productId || !_currency) return 0;
+
+  const productParams = PRODUCTS[_productId == BTCUSD ? 'BTC-USD' : 'ETH-USD'];
+  const { baseSpread, maxSlippage, slippageExponent, maxLiquidity } =
+    productParams;
+
+  return (
+    -1 *
+    (baseSpread * 100 +
+      maxSlippage *
+        (1 -
+          Math.exp(
+            -1 *
+              Math.pow(
+                +size / maxLiquidity[_currency == ETH ? 'weth' : 'usdc'],
+                slippageExponent
+              )
+          )))
+  );
+}
+
+export function getUPL(position, latestPrice) {
+  let upl = 0;
+  if (position.price * 1 == 0) return undefined;
+
+  let priceImpact = getPriceImpact(
+    position.size / PRICE_DENOMINATOR,
+    position.productId,
+    position.currency
+  );
+  if (latestPrice) {
+    if (position.isLong) {
+      latestPrice = latestPrice * (1 + priceImpact / 100);
+      upl =
+        ((position.size / PRICE_DENOMINATOR) *
+          (latestPrice * 1 - (position.price / PRICE_DENOMINATOR) * 1)) /
+        (position.price / PRICE_DENOMINATOR);
+    } else {
+      latestPrice = latestPrice * (1 - priceImpact / 100);
+      upl =
+        ((position.size / PRICE_DENOMINATOR) *
+          ((position.price / PRICE_DENOMINATOR) * 1 - latestPrice * 1)) /
+        (position.price / PRICE_DENOMINATOR);
+    }
+    // TODO: Add interest
+    // let interest = await getInterest(position);
+    // upl += interest;
+  }
+  return upl;
 }
