@@ -1,5 +1,9 @@
 <script>
-  import { priceFormatter, getTradesData } from '../../scripts/utils';
+  import {
+    priceFormatter,
+    getTradesData,
+    numberWithCommas,
+  } from '../../scripts/utils';
   import { tradeData } from '../../scripts/stores';
   import { ETH, ETHUSD } from '../../scripts/constants';
   import { SPINNER_ICON } from '../../scripts/icons';
@@ -145,20 +149,20 @@
             {trade.productId == ETHUSD ? 'ETHUSD' : 'BTCUSD'}
           </div>
           <div class="column column-entry-price">
-            {priceFormatter(trade.entryPrice)}
+            {numberWithCommas(priceFormatter(trade.entryPrice))}
           </div>
           <div class="column column-price">
-            {priceFormatter(trade.closePrice)}
+            {numberWithCommas(priceFormatter(trade.closePrice))}
           </div>
           <div class="column column-margin">
-            {priceFormatter(trade.margin, trade.currency)}{trade.currency == ETH
-              ? 'Ξ'
-              : 'USDC'}
+            {numberWithCommas(
+              priceFormatter(trade.margin, trade.currency)
+            )}{trade.currency == ETH ? 'Ξ' : ' USDC'}
           </div>
           <div class="column column-size">
-            {priceFormatter(trade.size, trade.currency)}{trade.currency == ETH
-              ? 'Ξ'
-              : 'USDC'}
+            {numberWithCommas(
+              priceFormatter(trade.size, trade.currency)
+            )}{trade.currency == ETH ? 'Ξ' : ' USDC'}
           </div>
           <div class="column column-leverage">
             {priceFormatter(trade.leverage)}×
@@ -203,6 +207,8 @@
     cursor: pointer;
     padding: 0 var(--base-padding);
     border-bottom: 1px solid var(--jet-dim);
+    background-color: var(--rich-black);
+    color: var(--silver-chalice);
   }
   .trade:hover {
     background-color: var(--jet-dim);

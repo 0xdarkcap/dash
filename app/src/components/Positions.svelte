@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { priceFormatter } from '../../scripts/utils';
+  import { priceFormatter, numberWithCommas } from '../../scripts/utils';
   import { ETH, ETHUSD } from '../../scripts/constants';
 
   export let data;
@@ -96,19 +96,18 @@
           {position.productId == ETHUSD ? 'ETHUSD' : 'BTCUSD'}
         </div>
         <div class="column column-price">
-          {priceFormatter(position.price)}
+          {numberWithCommas(priceFormatter(position.price))}$
         </div>
         <div class="column column-margin">
-          {priceFormatter(
-            position.margin,
-            position.currency
-          )}{position.currency == ETH ? 'Ξ' : 'USDC'}
+          {numberWithCommas(
+            priceFormatter(position.margin, position.currency)
+          )}{position.currency == ETH ? 'Ξ' : ' USDC'}
         </div>
         <div class="column column-size">
           {priceFormatter(
             position.size,
             position.currency
-          )}{position.currency == ETH ? 'Ξ' : 'USDC'}
+          )}{position.currency == ETH ? 'Ξ' : ' USDC'}
         </div>
         <div class="column column-leverage">
           {priceFormatter(position.leverage)}×
@@ -118,7 +117,7 @@
           <span class="pnl-percent">({position.uplPercent}%)</span>
         </div>
         <div class="column column-liqprice">
-          {priceFormatter(position.liquidationPrice) || '--'}
+          {numberWithCommas(priceFormatter(position.liquidationPrice)) || '--'}$
         </div>
       </div>
     {/each}
@@ -143,6 +142,8 @@
     cursor: pointer;
     padding: 0 var(--base-padding);
     border-bottom: 1px solid var(--jet-dim);
+    background-color: var(--rich-black);
+    color: var(--silver-chalice);
   }
   .trade:hover {
     background-color: var(--jet-dim);
