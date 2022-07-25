@@ -78,14 +78,12 @@ export async function getPositionsData(queryOptions) {
   return json.data.positions;
 }
 
-export async function getTradesData() {
+export async function getTradesData(queryOptions) {
   try {
     const query = `
       query {
         trades(
-          first: 100
-          orderDirection: desc
-          orderBy: timestamp
+          orderBy: ${queryOptions.orderBy}, orderDirection: ${queryOptions.orderDirection}, first: ${queryOptions.first}
         ) {
           margin
           size

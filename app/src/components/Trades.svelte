@@ -32,12 +32,12 @@
   }
 
   onMount(async () => {
-    tradeData.set(await getTradesData());
     const queryOptions = {
       orderBy: 'margin',
       orderDirection: 'desc',
       first: 1000,
     };
+    tradeData.set(await getTradesData(queryOptions));
     const _positionsData = await getPositionsData(queryOptions);
     calculateUPLs(_positionsData);
     positionsData.set(_positionsData);
@@ -69,6 +69,9 @@
 {#if loading}
   <div class="empty">
     <div class="loading-icon">{@html SPINNER_ICON}</div>
+  </div>
+  <div>
+    <center><h1>Fetching Data</h1></center>
   </div>
 {:else}
   <div class="account-list">
