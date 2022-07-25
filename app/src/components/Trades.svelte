@@ -56,8 +56,10 @@
       orderDirection: _orderDirection,
       first: 1000,
     };
-    if (_productFilter) queryOptions.product = _productFilter;
-    if (_currencyFilter) queryOptions.currency = _currencyFilter;
+    if (_productFilter && _productFilter !== 'undefined')
+      queryOptions.product = _productFilter;
+    if (_currencyFilter && _currencyFilter !== 'undefined')
+      queryOptions.currency = _currencyFilter;
     return queryOptions;
   }
 
