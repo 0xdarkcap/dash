@@ -101,13 +101,13 @@
         <div class="column column-margin">
           {numberWithCommas(
             priceFormatter(position.margin, position.currency)
-          )}{position.currency == ETH ? 'Ξ' : ' USDC'}
+          )}{position.currency == ETH ? 'Ξ' : '$'}
         </div>
         <div class="column column-size">
           {priceFormatter(
             position.size,
             position.currency
-          )}{position.currency == ETH ? 'Ξ' : ' USDC'}
+          )}{position.currency == ETH ? 'Ξ' : '$'}
         </div>
         <div class="column column-leverage">
           {priceFormatter(position.leverage)}×
@@ -125,6 +125,9 @@
 </div>
 
 <style>
+  .history {
+    background-color: var(--eerie-black);
+  }
   .columns {
     display: flex;
     align-items: center;
@@ -221,10 +224,30 @@
       width: 25%;
     }
     .column-size {
-      width: 25%;
+      width: 20%;
     }
     .column-pnl {
+      width: 17%;
+    }
+    .column-liqprice {
       width: 25%;
+    }
+  }
+  @media (max-width: 610px) {
+    .column-liqprice {
+      display: none;
+    }
+    .column-product {
+      width: 30%;
+    }
+    .column-price {
+      width: 30%;
+    }
+    .column-size {
+      width: 20%;
+    }
+    .column-pnl {
+      width: 20%;
     }
   }
 

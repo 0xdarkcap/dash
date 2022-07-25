@@ -126,7 +126,7 @@
       <option value={ETH}>ETH</option>
     </select>
   </div>
-  <div>
+  <div class="position-type">
     <a
       class:active={panel == 'positions'}
       href={'#/trades'}
@@ -168,13 +168,6 @@
 {/if}
 
 <style>
-  .account-nav {
-    padding: 0.1em var(--base-padding);
-    display: flex;
-    height: 42px;
-    align-items: center;
-    border-bottom: 1px solid var(--jet-dim);
-  }
   select.filter-select {
     background: var(--rich-black-fogra);
     color: var(--sonic-silver);
@@ -188,9 +181,17 @@
 
   .account-list {
     min-height: 100px;
-    background-color: var(--eerie-black);
   }
 
+  .position-type {
+    padding-bottom: 0.5em;
+  }
+  .account-nav {
+    padding: 0.5em var(--base-padding);
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--jet-dim);
+  }
   .account-nav a {
     color: var(--sonic-silver);
     margin-right: var(--base-padding);
@@ -204,9 +205,13 @@
     font-weight: 600;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 610px) {
     .account-list {
       min-height: 300px;
+    }
+    .account-nav {
+      flex-direction: column-reverse;
+      align-items: flex-start;
     }
   }
 </style>
