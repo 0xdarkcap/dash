@@ -17,8 +17,15 @@
 
   onMount(async () => {
     dayData.set(await getVolumeData());
-    positionsDataETH.set(await getPositionsData(ETHUSD));
-    positionsDataBTC.set(await getPositionsData(BTCUSD));
+    const queryOptions = {
+      product: ETHUSD,
+      orderBy: 'liquidationPrice',
+      orderDirection: 'asc',
+      first: 1000,
+    };
+    positionsDataETH.set(await getPositionsData(queryOptions));
+    queryOptions.product = BTCUSD;
+    positionsDataBTC.set(await getPositionsData(queryOptions));
     loading = false;
   });
 </script>
@@ -65,13 +72,5 @@
     width: 100vh;
     margin: auto;
     margin-top: 20px;
-  }
-  .loading-icon :global(svg) {
-    height: 50px;
-  }
-  .empty {
-    padding-top: 10%;
-    display: flex;
-    justify-content: center;
   }
 </style>

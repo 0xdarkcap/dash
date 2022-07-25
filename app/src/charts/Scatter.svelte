@@ -2,7 +2,7 @@
   import { get } from 'svelte/store';
   import { onMount } from 'svelte';
   import { scaleLinear, scalePow } from 'd3-scale';
-  import { ETH, PRICE_DENOMINATOR } from '../../scripts/constants';
+  import { ETH } from '../../scripts/constants';
   import { SPINNER_ICON } from '../../scripts/icons';
   import {
     BTCprice,
@@ -12,8 +12,9 @@
   } from '../../scripts/stores';
   import {
     numberWithCommas,
-    amountFormatter,
+    priceTickFormatter,
     getPositionXY,
+    priceFormatter,
   } from '../../scripts/utils';
 
   let activePoint = 0;
@@ -40,9 +41,7 @@
       // filtering out outliers
       if (!(x < productPrice * 5 && y > 10)) return;
       const curr = position.currency == ETH ? 'ETH' : 'USDC';
-      const margin = +(position.margin / PRICE_DENOMINATOR).toFixed(
-        position.currency == ETH ? 3 : 2
-      );
+      const margin = priceFormatter(position.margin, position.currency);
       minY = Math.min(minY, y);
       maxY = Math.max(maxY, y);
       points.push({
@@ -122,7 +121,7 @@
       <g class="axis y-axis">
         {#each yTicks as tick}
           <g class="tick tick-{tick}" transform="translate(0, {yScale(tick)})">
-            <text x={padding.left - 8} y="+8">{amountFormatter(tick)}</text>
+            <text x={padding.left - 8} y="+8">{priceTickFormatter(tick)}</text>
           </g>
         {/each}
         <g class="tick" transform="translate(0,{yScale(0)})">

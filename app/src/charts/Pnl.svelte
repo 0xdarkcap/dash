@@ -295,15 +295,6 @@
     opacity: 1;
   }
 
-  .loading-icon :global(svg) {
-    height: 50px;
-  }
-  .empty {
-    padding-top: 10%;
-    display: flex;
-    justify-content: center;
-  }
-
   .y-axis {
     transform: translate(-5px, 0);
   }

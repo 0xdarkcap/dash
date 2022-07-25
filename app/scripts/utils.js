@@ -1,6 +1,13 @@
 import { component, currentPage } from './stores';
 import Home from '../src/components/Home.svelte';
-import { GRAPH_URL, ETH, USDC, PRICE_DENOMINATOR } from './constants';
+import Trades from '../src/components/Trades.svelte';
+import {
+  GRAPH_URL,
+  ETH,
+  PRICE_DENOMINATOR,
+  PRODUCTS,
+  BTCUSD,
+} from './constants';
 
 async function getData(query) {
   const response = await fetch(GRAPH_URL, {
@@ -45,44 +52,77 @@ export async function getPrice(product) {
   }
 }
 
-export async function getPositionsData(PRODUCT) {
-  const query = `
-                query{
-                    positions(where:{productId:"${PRODUCT}"}, orderBy: liquidationPrice, orderDirection: asc, first: 1000) {
-                        id,
-                        productId,
-                        currency,
-                        leverage,
-                        price,
-                        margin,
-                        user,
-                        liquidationPrice,
-                        isLong,
-                        createdAtTimestamp,
-                        updatedAtTimestamp
-                    }
-                }
-              `;
-  const json = await getData(query);
-  return json.data.positions;
+export async function getPositionsData(queryOptions) {
+  try {
+    let filter = `where:{`;
+    if (queryOptions.product) filter += `productId: "${queryOptions.product}"`;
+    if (queryOptions.currency) filter += `currency: "${queryOptions.currency}"`;
+    filter += '},';
+    const query = `
+                  query{
+                      positions(${filter} orderBy: ${queryOptions.orderBy}, orderDirection: ${queryOptions.orderDirection}, first: ${queryOptions.first}) {
+                          id,
+                          productId,
+                          currency,
+                          leverage,
+                          price,
+                          margin,
+                          size,
+                          user,
+                          liquidationPrice,
+                          isLong,
+                          createdAtTimestamp,
+                          updatedAtTimestamp
+                      }
+                  }
+                `;
+    const json = await getData(query);
+    return json.data.positions;
+  } catch (err) {
+    return [];
+  }
+}
+
+export async function getTradesData(queryOptions) {
+  try {
+    let filter = `where:{`;
+    if (queryOptions.product) filter += `productId: "${queryOptions.product}"`;
+    if (queryOptions.currency) filter += `currency: "${queryOptions.currency}"`;
+    filter += '},';
+    const query = `
+      query {
+        trades(
+          ${filter} orderBy: ${queryOptions.orderBy}, orderDirection: ${queryOptions.orderDirection}, first: ${queryOptions.first}
+        ) {
+          margin
+          size
+          pnl
+          entryPrice
+          closePrice
+          productId
+          isLong
+          leverage
+          wasLiquidated
+          currency
+        }
+      }
+    `;
+    const json = await getData(query);
+    return json?.data?.trades;
+  } catch (err) {
+    return [];
+  }
 }
 
 export function loadRoute(path, isInitial) {
   if (!path || path == '/' || path.includes('/home')) {
     component.set(Home);
     currentPage.set('home');
+  } else if (path.includes('/trades')) {
+    component.set(Trades);
+    currentPage.set('trade');
+    document.title = `Trade | CAP`;
   }
-  /*
-      else if (path.includes('./pools')) {
-          component.set('pools');
-          currentPage.set('pools');
-          document.title('CAP | pool stats');
-      }
-      else if (path.includes('./trades')) {
-          component.set('trades');
-          currentPage.set('trades');
-          document.title('CAP | trades');
-      }*/
 }
 
 export function numberWithCommas(x) {
@@ -117,7 +157,7 @@ export function formatDate(date) {
   return `${day}/${month}`;
 }
 
-export function amountFormatter(num) {
+export function priceTickFormatter(num) {
   if (num > 1000000) {
     return parseFloat((num / 1000000).toFixed(0)) + 'M';
   } else if (num > 999 && num < 1000000) {
@@ -125,6 +165,11 @@ export function amountFormatter(num) {
   } else {
     return parseFloat(num.toFixed(1));
   }
+}
+
+export function priceFormatter(price, currency) {
+  const precision = currency == ETH ? 3 : 2;
+  return +(price / PRICE_DENOMINATOR).toFixed(precision);
 }
 
 export function getPositionXY(position, ethP) {
@@ -135,4 +180,56 @@ export function getPositionXY(position, ethP) {
       (position.currency == ETH ? ethP : 1)
     ).toFixed(2),
   };
+}
+
+export function getPriceImpact(size, _productId, _currency) {
+  if (!size || !_productId || !_currency) return 0;
+
+  const productParams = PRODUCTS[_productId == BTCUSD ? 'BTC-USD' : 'ETH-USD'];
+  const { baseSpread, maxSlippage, slippageExponent, maxLiquidity } =
+    productParams;
+
+  return (
+    -1 *
+    (baseSpread * 100 +
+      maxSlippage *
+        (1 -
+          Math.exp(
+            -1 *
+              Math.pow(
+                +size / maxLiquidity[_currency == ETH ? 'weth' : 'usdc'],
+                slippageExponent
+              )
+          )))
+  );
+}
+
+export function getUPL(position, latestPrice) {
+  let upl = 0;
+  if (position.price * 1 == 0) return undefined;
+
+  let priceImpact = getPriceImpact(
+    position.size / PRICE_DENOMINATOR,
+    position.productId,
+    position.currency
+  );
+  if (latestPrice) {
+    if (position.isLong) {
+      latestPrice = latestPrice * (1 + priceImpact / 100);
+      upl =
+        ((position.size / PRICE_DENOMINATOR) *
+          (latestPrice * 1 - (position.price / PRICE_DENOMINATOR) * 1)) /
+        (position.price / PRICE_DENOMINATOR);
+    } else {
+      latestPrice = latestPrice * (1 - priceImpact / 100);
+      upl =
+        ((position.size / PRICE_DENOMINATOR) *
+          ((position.price / PRICE_DENOMINATOR) * 1 - latestPrice * 1)) /
+        (position.price / PRICE_DENOMINATOR);
+    }
+    // TODO: Add interest
+    // let interest = await getInterest(position);
+    // upl += interest;
+  }
+  return upl;
 }

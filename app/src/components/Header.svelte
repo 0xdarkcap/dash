@@ -5,9 +5,7 @@
   <div class="inner">
     <div class="left">
       <a class="logo" href="/"> <h1>🧢</h1> </a>
-      <a class="link" target="_blank" href="https://cap.finance/#/trade"
-        >Trade</a
-      >
+      <a class="link" href="#/trades">Trades</a>
     </div>
   </div>
 </header>
