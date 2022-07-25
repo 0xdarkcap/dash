@@ -249,9 +249,6 @@
     .column-pnl {
       width: 20%;
     }
-    .column {
-      align-self: flex-end;
-    }
   }
 
   .account {
