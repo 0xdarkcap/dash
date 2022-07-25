@@ -15,7 +15,9 @@
 </script>
 
 <Header />
-<svelte:component this={$component} />
+<div style="padding-bottom: 20mm">
+  <svelte:component this={$component} />
+</div>
 <Footer />
 
 <style>

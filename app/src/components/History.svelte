@@ -157,12 +157,12 @@
           <div class="column column-margin">
             {numberWithCommas(
               priceFormatter(trade.margin, trade.currency)
-            )}{trade.currency == ETH ? 'Ξ' : ' USDC'}
+            )}{trade.currency == ETH ? 'Ξ' : ' $'}
           </div>
           <div class="column column-size">
             {numberWithCommas(
               priceFormatter(trade.size, trade.currency)
-            )}{trade.currency == ETH ? 'Ξ' : ' USDC'}
+            )}{trade.currency == ETH ? 'Ξ' : ' $'}
           </div>
           <div class="column column-leverage">
             {priceFormatter(trade.leverage)}×
@@ -183,6 +183,9 @@
 {/if}
 
 <style>
+  .history {
+    background-color: var(--eerie-black);
+  }
   .empty {
     background: var(--rich-black-fogra);
   }

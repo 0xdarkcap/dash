@@ -66,7 +66,6 @@
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
-    padding-bottom: 20mm;
   }
   .chart {
     width: 100vh;
