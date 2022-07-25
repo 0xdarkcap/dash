@@ -79,11 +79,14 @@ export async function getPositionsData(queryOptions) {
 }
 
 export async function getTradesData(queryOptions) {
+  const filter = queryOptions.product
+    ? `where:{productId:"${queryOptions.product}"},`
+    : '';
   try {
     const query = `
       query {
         trades(
-          orderBy: ${queryOptions.orderBy}, orderDirection: ${queryOptions.orderDirection}, first: ${queryOptions.first}
+          ${filter} orderBy: ${queryOptions.orderBy}, orderDirection: ${queryOptions.orderDirection}, first: ${queryOptions.first}
         ) {
           margin
           size
