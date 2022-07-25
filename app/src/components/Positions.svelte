@@ -3,26 +3,76 @@
   import { ETH, ETHUSD } from '../../scripts/constants';
 
   export let data;
+  $: sortedData = JSON.parse(JSON.stringify(data));
+  let sortBy = 'margin';
+  let sortOrder = 'desc';
+
   const showModal = console.log;
+
+  $: changeSort = (_sortBy) => {
+    if (sortBy == _sortBy) {
+      sortOrder = sortOrder == 'desc' ? 'asc' : 'desc';
+      sortedData = sortedData.reverse();
+    } else {
+      sortBy = _sortBy;
+      sortOrder = 'asc';
+      sortedData = sortedData.sort((a, b) => a[_sortBy] - b[_sortBy]);
+    }
+  };
 </script>
 
 <div class="history">
   <div class="columns">
-    <div class="column column-product">Product</div>
-    <div class="column column-price">Price</div>
-    <div class="column column-margin">Margin</div>
-    <div class="column column-size">Size</div>
-    <div class="column column-leverage">Leverage</div>
-    <div class="column column-pnl">UPL</div>
-    <div class="column column-liqprice">Liq. Price</div>
+    <div class="column column-product" on:click={() => changeSort('productId')}>
+      Product <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
+        >{sortBy == 'productId' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+      >
+    </div>
+    <div class="column column-price" on:click={() => changeSort('price')}>
+      Price <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
+        >{sortBy == 'price' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+      >
+    </div>
+    <div class="column column-margin" on:click={() => changeSort('margin')}>
+      Margin <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
+        >{sortBy == 'margin' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+      >
+    </div>
+    <div class="column column-size" on:click={() => changeSort('size')}>
+      Size <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
+        >{sortBy == 'size' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+      >
+    </div>
+    <div class="column column-leverage" on:click={() => changeSort('leverage')}>
+      Leverage <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
+        >{sortBy == 'leverage' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+      >
+    </div>
+    <div class="column column-pnl" on:click={() => changeSort('upl')}>
+      UPL <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
+        >{sortBy == 'upl' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+      >
+    </div>
+    <div
+      class="column column-liqprice"
+      on:click={changeSort('liquidationPrice')}
+    >
+      Liq. Price <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
+        >{sortBy == 'liquidationPrice'
+          ? sortOrder == 'asc'
+            ? '↑'
+            : '↓'
+          : ''}</span
+      >
+    </div>
     <div class="column column-close" />
   </div>
 </div>
 <div class="trades-list no-scrollbar" id="history-list">
-  {#if data.length == 0}
+  {#if sortedData.length == 0}
     <div class="empty">No positions to show.</div>
   {:else}
-    {#each data as position}
+    {#each sortedData as position}
       <div
         class="trade"
         on:click={() => {
@@ -89,6 +139,9 @@
     background-color: var(--jet-dim);
   }
 
+  .column {
+    cursor: pointer;
+  }
   .column-product {
     width: 12.5%;
   }
