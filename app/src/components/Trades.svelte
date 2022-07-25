@@ -12,13 +12,17 @@
     ETH,
     ETHUSD,
     PRICE_DENOMINATOR,
+    USDC,
   } from '../../scripts/constants';
   import { SPINNER_ICON } from '../../scripts/icons';
   import Positions from './Positions.svelte';
   import History from './History.svelte';
 
   let loading = true;
+  let orderBy = 'margin';
+  let orderDirection = 'desc';
   let productFilter = undefined;
+  let currencyFilter = undefined;
   let panel = 'positions';
 
   function calculateUPLs(_positions) {
@@ -41,28 +45,60 @@
     fetchData();
   });
 
-  async function fetchData() {
-    loading = true;
+  function getQuery(
+    _orderBy,
+    _orderDirection,
+    _productFilter,
+    _currencyFilter
+  ) {
     const queryOptions = {
-      orderBy: 'margin',
-      orderDirection: 'desc',
+      orderBy: _orderBy,
+      orderDirection: _orderDirection,
       first: 1000,
     };
-    if (productFilter) {
-      queryOptions.product = productFilter;
-    }
-    tradeData.set(await getTradesData(queryOptions));
-    const _positionsData = await getPositionsData(queryOptions);
+    if (_productFilter) queryOptions.product = _productFilter;
+    if (_currencyFilter) queryOptions.currency = _currencyFilter;
+    return queryOptions;
+  }
+
+  async function fetchData() {
+    loading = true;
+    await Promise.all([fetchTrades(), fetchPositions()]);
+    loading = false;
+  }
+
+  async function fetchPositions() {
+    const query = getQuery(
+      orderBy,
+      orderDirection,
+      productFilter,
+      currencyFilter
+    );
+    const _positionsData = await getPositionsData(query);
     calculateUPLs(_positionsData);
     positionsData.set(_positionsData);
-    loading = false;
+  }
+  async function fetchTrades() {
+    const query = getQuery(
+      orderBy,
+      orderDirection,
+      productFilter,
+      currencyFilter
+    );
+    tradeData.set(await getTradesData(query));
   }
 
   function selectPanel(_panel) {
     panel = _panel;
+    orderBy = 'margin';
+    orderDirection = 'desc';
   }
   function setProductFilter(e) {
     productFilter = e.target.value;
+    fetchData();
+  }
+  function setCurrencyFilter(e) {
+    currencyFilter = e.target.value;
     fetchData();
   }
 </script>
@@ -71,12 +107,21 @@
   <div style="flex: 1">
     <select
       name="filter-product"
-      class="filter-product"
+      class="filter-select"
       on:change={setProductFilter}
     >
       <option value={undefined}>Filter Product</option>
       <option value={BTCUSD}>BTC-USD</option>
       <option value={ETHUSD}>ETH-USD</option>
+    </select>
+    <select
+      name="filter-currency"
+      class="filter-select"
+      on:change={setCurrencyFilter}
+    >
+      <option value={undefined}>Filter Currency</option>
+      <option value={USDC}>USDC</option>
+      <option value={ETH}>ETH</option>
     </select>
   </div>
   <div>
@@ -110,7 +155,12 @@
       <Positions data={$positionsData} />
     {/if}
     {#if panel == 'history'}
-      <History data={$tradeData} />
+      <History
+        data={$tradeData}
+        bind:orderBy
+        bind:orderDirection
+        {fetchTrades}
+      />
     {/if}
   </div>
 {/if}
@@ -123,7 +173,7 @@
     align-items: center;
     border-bottom: 1px solid var(--jet-dim);
   }
-  select.filter-product {
+  select.filter-select {
     background: var(--rich-black-fogra);
     color: var(--sonic-silver);
     margin: 0;

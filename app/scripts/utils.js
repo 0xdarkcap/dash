@@ -53,36 +53,42 @@ export async function getPrice(product) {
 }
 
 export async function getPositionsData(queryOptions) {
-  const filter = queryOptions.product
-    ? `where:{productId:"${queryOptions.product}"},`
-    : '';
-  const query = `
-                query{
-                    positions(${filter} orderBy: ${queryOptions.orderBy}, orderDirection: ${queryOptions.orderDirection}, first: ${queryOptions.first}) {
-                        id,
-                        productId,
-                        currency,
-                        leverage,
-                        price,
-                        margin,
-                        size,
-                        user,
-                        liquidationPrice,
-                        isLong,
-                        createdAtTimestamp,
-                        updatedAtTimestamp
-                    }
-                }
-              `;
-  const json = await getData(query);
-  return json.data.positions;
+  try {
+    let filter = `where:{`;
+    if (queryOptions.product) filter += `productId: "${queryOptions.product}"`;
+    if (queryOptions.currency) filter += `currency: "${queryOptions.currency}"`;
+    filter += '},';
+    const query = `
+                  query{
+                      positions(${filter} orderBy: ${queryOptions.orderBy}, orderDirection: ${queryOptions.orderDirection}, first: ${queryOptions.first}) {
+                          id,
+                          productId,
+                          currency,
+                          leverage,
+                          price,
+                          margin,
+                          size,
+                          user,
+                          liquidationPrice,
+                          isLong,
+                          createdAtTimestamp,
+                          updatedAtTimestamp
+                      }
+                  }
+                `;
+    const json = await getData(query);
+    return json.data.positions;
+  } catch (err) {
+    return [];
+  }
 }
 
 export async function getTradesData(queryOptions) {
-  const filter = queryOptions.product
-    ? `where:{productId:"${queryOptions.product}"},`
-    : '';
   try {
+    let filter = `where:{`;
+    if (queryOptions.product) filter += `productId: "${queryOptions.product}"`;
+    if (queryOptions.currency) filter += `currency: "${queryOptions.currency}"`;
+    filter += '},';
     const query = `
       query {
         trades(

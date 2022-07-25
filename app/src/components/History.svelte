@@ -5,33 +5,22 @@
   import { SPINNER_ICON } from '../../scripts/icons';
 
   export let data;
-  let sortBy = 'margin';
-  let sortOrder = 'desc';
+  export let orderBy;
+  export let orderDirection;
+  export let fetchTrades;
   let loading = false;
 
   const showModal = console.log;
 
-  $: changeSort = async (_sortBy) => {
+  $: changeSort = async (_orderBy) => {
     loading = true;
-    if (sortBy == _sortBy) {
-      sortOrder = sortOrder == 'desc' ? 'asc' : 'desc';
-
-      const queryOptions = {
-        orderBy: _sortBy,
-        orderDirection: sortOrder,
-        first: 1000,
-      };
-      tradeData.set(await getTradesData(queryOptions));
+    if (orderBy == _orderBy) {
+      orderDirection = orderDirection == 'desc' ? 'asc' : 'desc';
     } else {
-      sortBy = _sortBy;
-      sortOrder = 'desc';
-      const queryOptions = {
-        orderBy: _sortBy,
-        orderDirection: sortOrder,
-        first: 1000,
-      };
-      tradeData.set(await getTradesData(queryOptions));
+      orderBy = _orderBy;
+      orderDirection = 'desc';
     }
+    await fetchTrades();
     loading = false;
   };
 </script>
@@ -50,17 +39,21 @@
         class="column column-product"
         on:click={() => changeSort('productId')}
       >
-        Product <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
-          >{sortBy == 'productId' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+        Product <span class={orderDirection == 'asc' ? 'pos' : 'neg'}
+          >{orderBy == 'productId'
+            ? orderDirection == 'asc'
+              ? '↑'
+              : '↓'
+            : ''}</span
         >
       </div>
       <div
         class="column column-entry-price"
         on:click={() => changeSort('entryPrice')}
       >
-        Entry Price <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
-          >{sortBy == 'entryPrice'
-            ? sortOrder == 'asc'
+        Entry Price <span class={orderDirection == 'asc' ? 'pos' : 'neg'}
+          >{orderBy == 'entryPrice'
+            ? orderDirection == 'asc'
               ? '↑'
               : '↓'
             : ''}</span
@@ -71,9 +64,9 @@
         on:click={() => changeSort('closePrice')}
       >
         Close Price
-        <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
-          >{sortBy == 'closePrice'
-            ? sortOrder == 'asc'
+        <span class={orderDirection == 'asc' ? 'pos' : 'neg'}
+          >{orderBy == 'closePrice'
+            ? orderDirection == 'asc'
               ? '↑'
               : '↓'
             : ''}</span
@@ -81,14 +74,22 @@
       </div>
       <div class="column column-margin" on:click={() => changeSort('margin')}>
         Margin
-        <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
-          >{sortBy == 'margin' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+        <span class={orderDirection == 'asc' ? 'pos' : 'neg'}
+          >{orderBy == 'margin'
+            ? orderDirection == 'asc'
+              ? '↑'
+              : '↓'
+            : ''}</span
         >
       </div>
       <div class="column column-size" on:click={() => changeSort('size')}>
         Size
-        <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
-          >{sortBy == 'size' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+        <span class={orderDirection == 'asc' ? 'pos' : 'neg'}
+          >{orderBy == 'size'
+            ? orderDirection == 'asc'
+              ? '↑'
+              : '↓'
+            : ''}</span
         >
       </div>
       <div
@@ -96,14 +97,18 @@
         on:click={() => changeSort('leverage')}
       >
         Leverage
-        <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
-          >{sortBy == 'leverage' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+        <span class={orderDirection == 'asc' ? 'pos' : 'neg'}
+          >{orderBy == 'leverage'
+            ? orderDirection == 'asc'
+              ? '↑'
+              : '↓'
+            : ''}</span
         >
       </div>
       <div class="column column-pnl" on:click={() => changeSort('pnl')}>
         P/L
-        <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
-          >{sortBy == 'pnl' ? (sortOrder == 'asc' ? '↑' : '↓') : ''}</span
+        <span class={orderDirection == 'asc' ? 'pos' : 'neg'}
+          >{orderBy == 'pnl' ? (orderDirection == 'asc' ? '↑' : '↓') : ''}</span
         >
       </div>
       <div
@@ -111,9 +116,9 @@
         on:click={() => changeSort('wasLiquidated')}
       >
         Was Liq.
-        <span class={sortOrder == 'asc' ? 'pos' : 'neg'}
-          >{sortBy == 'wasLiquidated'
-            ? sortOrder == 'asc'
+        <span class={orderDirection == 'asc' ? 'pos' : 'neg'}
+          >{orderBy == 'wasLiquidated'
+            ? orderDirection == 'asc'
               ? '↑'
               : '↓'
             : ''}</span
