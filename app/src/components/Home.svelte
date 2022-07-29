@@ -11,8 +11,9 @@
   import Scatter from '../charts/Scatter.svelte';
   import Revenue from '../charts/Revenue.svelte';
   import Pnl from '../charts/Pnl.svelte';
-  import { ETHUSD, BTCUSD } from '../../scripts/constants';
+  import { ETHUSD, BTCUSD, ETH, USDC } from '../../scripts/constants';
   import LiqArea from '../charts/LiqArea.svelte';
+  import Pool from './Pool.svelte';
   let loading = true;
 
   onMount(async () => {
@@ -39,6 +40,12 @@
   </div>
 {:else}
   <div class="flex-container">
+    <div class="chart">
+      <Pool currency={ETH} />
+    </div>
+    <div class="chart">
+      <Pool currency={USDC} />
+    </div>
     <div class="chart">
       <Scatter product="ETH-USD" />
     </div>
