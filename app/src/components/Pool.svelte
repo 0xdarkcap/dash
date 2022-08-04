@@ -74,7 +74,7 @@
 
   <div class="apy">
     <div class="label">
-      On paper pool {totalUPL > 0 ? 'drawdawn' : 'profit'}
+      On paper pool {totalUPL > 0 ? 'drawdown' : 'profit'}
     </div>
     <div class="value">
       <span class={totalUPL > 0 ? 'neg' : 'pos'}
@@ -97,7 +97,7 @@
   .pool {
     background-color: var(--eerie-black);
     border-radius: var(--base-radius);
-    max-width: 500px;
+
     overflow: hidden;
     margin: 0 auto;
   }
