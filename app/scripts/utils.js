@@ -104,6 +104,7 @@ export async function getTradesData(queryOptions) {
           leverage
           wasLiquidated
           currency
+          blockNumber
         }
       }
     `;
