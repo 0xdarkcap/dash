@@ -6,7 +6,7 @@
     <div class="inner-text">Made by:</div>
 
     <div class="inner-names">
-      <a target="_blank" href="https://twitter.com/0xsha3">mrdark</a> |
+      <a target="_blank" href="https://github.com/0xdarkcap">dark</a> |
       <a target="_blank" href="https://github.com/hjjinx">hjjinx</a>
     </div>
   </div>
