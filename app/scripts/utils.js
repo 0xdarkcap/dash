@@ -159,9 +159,10 @@ export function formatDate(date) {
 }
 
 export function priceTickFormatter(num) {
-  if (num > 1000000) {
+  const unsignedNum = Math.abs(num);
+  if (unsignedNum > 1000000) {
     return parseFloat((num / 1000000).toFixed(0)) + 'M';
-  } else if (num > 999 && num < 1000000) {
+  } else if (unsignedNum > 999 && unsignedNum < 1000000) {
     return parseFloat((num / 1000).toFixed(1)) + 'K';
   } else {
     return parseFloat(num.toFixed(1));

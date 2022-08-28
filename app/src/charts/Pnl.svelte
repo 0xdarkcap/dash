@@ -136,7 +136,7 @@
               transform="translate(0, {yScale(tick) || 0})"
             >
               <line x2="100%" style="transform: scaleX(1.01)" />
-              <text y="-4" class="y-axisText">{priceTickFormatter(tick)}</text>
+              <text y="-3" class="y-axisText">{priceTickFormatter(tick)}</text>
             </g>
           {/each}
         </g>
@@ -298,9 +298,6 @@
     transform: translate(-5px, 0);
   }
 
-  .y-axis text {
-    text-anchor: end;
-  }
   .y-axisText {
     font-family: 'Times New Roman', Times, serif;
   }
