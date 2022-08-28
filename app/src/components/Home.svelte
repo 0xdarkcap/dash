@@ -64,6 +64,9 @@
     <div class="chart">
       <LiqArea product="BTC-USD" />
     </div>
+    <div class="chart">
+      <Pnl product="ETH-USD" />
+    </div>
   </div>
 {/if}
 
