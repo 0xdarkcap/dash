@@ -107,11 +107,11 @@
   {:else}
     <h3>
       {date} | Ξ:
-      <span class="volumeETH"
+      <span class={activePoint.yETH > 0 ? 'pos' : 'neg'}
         >{numberWithCommas(Math.round(activePoint.yETH))}</span
       >
       | USDC:
-      <span class="volumeUSDC"
+      <span class={activePoint.yUSD > 0 ? 'pos' : 'neg'}
         >{numberWithCommas(Math.round(activePoint.yUSD))}$</span
       >
     </h3>
@@ -262,17 +262,17 @@
     opacity: 1;
   }
   .active rect.downETH {
-    fill: orange;
+    fill: red;
     stroke: none;
     opacity: 1;
   }
   .active rect.upETH {
-    fill: blue;
+    fill: var(--green);
     stroke: none;
     opacity: 1;
   }
   .active rect.upUSD {
-    fill: cyan;
+    fill: var(--green);
     stroke: none;
     opacity: 1;
   }
@@ -284,13 +284,13 @@
     height: 100%;
   }
   g.stacked-bar:hover > rect.upETH,
-  g.stacked-bar:hover > rect.downETH {
-    fill: blue;
+  g.stacked-bar:hover > rect.upUSD {
+    fill: var(--green);
     opacity: 1;
   }
-  g.stacked-bar:hover > rect.upUSD,
+  g.stacked-bar:hover > rect.downETH,
   g.stacked-bar:hover > rect.downUSD {
-    fill: cyan;
+    fill: red;
     opacity: 1;
   }
 
@@ -300,12 +300,5 @@
 
   .y-axisText {
     font-family: 'Times New Roman', Times, serif;
-  }
-
-  .volumeETH {
-    color: blue;
-  }
-  .volumeUSDC {
-    color: cyan;
   }
 </style>
