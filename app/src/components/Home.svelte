@@ -50,6 +50,9 @@
       <Scatter product="ETH-USD" />
     </div>
     <div class="chart">
+      <Pnl product="ETH-USD" />
+    </div>
+    <div class="chart">
       <Scatter product="BTC-USD" />
     </div>
     <div class="chart">

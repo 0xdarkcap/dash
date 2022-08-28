@@ -9,6 +9,7 @@
     numberWithCommas,
     timeConverter,
     formatDate,
+    priceTickFormatter,
   } from '../../scripts/utils';
 
   let loading = true;
@@ -17,7 +18,7 @@
   //   let BTCPrice;
   let ETHPrice;
   const xTicks = [];
-  const yTicks = [];
+  let yTicks = [];
   onMount(async () => {
     ETHPrice = await get(ETHprice);
     const getDayData = async () => {
@@ -32,34 +33,36 @@
           xValues.push(parseInt(element.id.slice(43)));
         }
         if (currency == ETH) {
-          points[points.length - 1].yETH = parseInt(
+          points[points.length - 1].yETH = +(
             element.cumulativePnl / PRICE_DENOMINATOR
-          );
+          ).toFixed(2);
         } else {
-          points[points.length - 1].yUSD = parseInt(
+          points[points.length - 1].yUSD = +(
             element.cumulativePnl / PRICE_DENOMINATOR
-          );
+          ).toFixed(0);
         }
-        if (points[points.length - 1].yUSD && points[points.length - 1].yETH) {
-          points[points.length - 1].y =
+        if (
+          points[points.length - 1].yUSD !== undefined &&
+          points[points.length - 1].yETH !== undefined
+        ) {
+          points[points.length - 1].y = +(
             ETHPrice * points[points.length - 1].yETH +
-            points[points.length - 1].yUSD;
+            points[points.length - 1].yUSD
+          ).toFixed(0);
         }
       };
       data.forEach(pushElementToData);
     };
-
     await getDayData();
 
-    const maxY = points
-      .map((i) => i.y)
-      .reduce((acc, curr) => (curr > acc ? curr : acc), 0);
-    const minY = points
-      .map((i) => i.y)
-      .reduce((acc, curr) => (curr < acc ? curr : acc));
-    console.log(maxY);
+    const maxY = Math.max(...points.map((i) => i.y));
+    const minY = Math.min(...points.map((i) => i.y));
+    yTicks = scaleLinear()
+      .domain([minY * 1.1, maxY * 1.1])
+      .range([height - padding.bottom, padding.top])
+      .nice()
+      .ticks(6);
     for (let i = 1; i <= 6; i++) {
-      yTicks.push(Math.ceil((maxY * i) / (6 * 1000000)) * 1000000);
       xTicks.push(
         new Date(
           86400000 * points[Math.round(((points.length - 1) * (i - 1)) / 5)].x
@@ -79,7 +82,7 @@
     .range([padding.left, width - padding.right]);
 
   $: yScale = scaleLinear()
-    .domain([0, Math.max.apply(null, yTicks)])
+    .domain([Math.min(...yTicks), Math.max(...yTicks)])
     .range([height - padding.bottom, padding.top]);
 
   $: innerWidth = width - (padding.left + padding.right);
@@ -133,9 +136,7 @@
               transform="translate(0, {yScale(tick) || 0})"
             >
               <line x2="100%" style="transform: scaleX(1.01)" />
-              <text y="-4" class="y-axisText"
-                >{(tick / 1000000).toString() + 'M'}</text
-              >
+              <text y="-4" class="y-axisText">{priceTickFormatter(tick)}</text>
             </g>
           {/each}
         </g>
@@ -147,9 +148,9 @@
           >
             <line x2="100%" />
             <text
-              >{Math.floor(
-                (activePoint.yETH * ETHPrice + activePoint.yUSD) / 1000000
-              ).toString() + 'M'}</text
+              >{priceTickFormatter(
+                activePoint.yETH * ETHPrice + activePoint.yUSD
+              )}</text
             >
           </g>
         </g>
@@ -179,7 +180,7 @@
                 date = timeConverter(point.x * 86400);
               }}
               class={point.yETH < 0 ? 'downETH' : 'upETH'}
-              x={xScale(i) + 2}
+              x={xScale(i)}
               y={yScale(point.yETH < 0 ? 0 : ETHPrice * point.yETH)}
               width={barWidth || 0}
               height={yScale(0) - yScale(Math.abs(ETHPrice * point.yETH)) || 0}
@@ -191,24 +192,18 @@
                 date = timeConverter(point.x * 86400);
               }}
               class={point.yUSD < 0 ? 'downUSD' : 'upUSD'}
-              x={xScale(i) + 2}
+              x={xScale(i)}
               y={yScale(
-                point.yUSD < 0
-                  ? point.yETH < 0
-                    ? point.yETH * ETHprice
-                    : 0
-                  : point.yETH > 0
-                  ? point.y
-                  : point.yUSD
-              ) || 0}
+                point.yETH * point.yUSD < 0
+                  ? point.yUSD < 0
+                    ? 0
+                    : point.yUSD
+                  : point.yUSD < 0
+                  ? point.yETH * ETHPrice
+                  : point.yETH * ETHPrice + point.yUSD
+              )}
               width={barWidth || 0}
-              height={point.yUSD < 0
-                ? point.yETH < 0
-                  ? yScale(0) - yScale(Math.abs(point.y))
-                  : yScale(0) - yScale(Math.abs(point.yUSD))
-                : point.yETH > 0
-                ? yScale(point.yETH * ETHprice) - yScale(point.y)
-                : yScale(0) - yScale(Math.abs(point.yUSD))}
+              height={yScale(0) - yScale(Math.abs(point.yUSD))}
             />
           </g>
         {/each}
@@ -255,7 +250,9 @@
   .tick.tick-0 line {
     stroke-dasharray: 0;
   }
-
+  .tick.selected text {
+    transform: translate(0, -5px);
+  }
   .x-axis .tick text {
     text-anchor: middle;
   }
@@ -286,17 +283,23 @@
   g.stacked-bar {
     height: 100%;
   }
-  g.stacked-bar:hover > rect {
+  g.stacked-bar:hover > rect.upETH,
+  g.stacked-bar:hover > rect.downETH {
     fill: blue;
     opacity: 1;
   }
-  g.stacked-bar:hover > rect.usd {
+  g.stacked-bar:hover > rect.upUSD,
+  g.stacked-bar:hover > rect.downUSD {
     fill: cyan;
     opacity: 1;
   }
 
   .y-axis {
     transform: translate(-5px, 0);
+  }
+
+  .y-axis text {
+    text-anchor: end;
   }
   .y-axisText {
     font-family: 'Times New Roman', Times, serif;
