@@ -58,7 +58,7 @@
     const maxY = Math.max(...points.map((i) => i.y));
     const minY = Math.min(...points.map((i) => i.y));
     yTicks = scaleLinear()
-      .domain([minY * 1.1, maxY * 1.1])
+      .domain([minY * 1.2, maxY * 1.2])
       .range([height - padding.bottom, padding.top])
       .nice()
       .ticks(6);
