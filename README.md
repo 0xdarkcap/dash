@@ -1,3 +1,3 @@
 # dash
 
-Dashboard to show data across cap.finance
+Dashboard to show (some) data across CAP.finance
